@@ -1,7 +1,7 @@
 import config from "./config/config.js";
 import express, { json, urlencoded } from "express";
 const app = express();
-const port = config.server.port || 5001;
+const port = config.server.port || 5000;
 
 import { router } from "./routes/index.js";
 import cors from "cors";
