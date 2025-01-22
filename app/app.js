@@ -3,7 +3,7 @@ import express, { json, urlencoded } from "express";
 const app = express();
 const port = config.server.port || 5000;
 
-import { router } from "./routes/index.js";
+import { router } from "./routes/api/v1/index.js";
 import cors from "cors";
 
 // Middleware
