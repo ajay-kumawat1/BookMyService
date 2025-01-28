@@ -13,6 +13,17 @@ export const UserSchema = new Schema(
     },
     email: { type: String, required: true },
     password: { type: String, default: null },
+    phoneNumber: {
+      type: String,
+      default: null,
+      unique: true,
+      validate: {
+        validator: function (v) {
+          return /\d{10}/.test(v); // Validates 10-digit phone numbers
+        },
+        message: (props) => `${props.value} is not a valid phone number!`,
+      },
+    },
     isAdmin: {
       type: Boolean,
       default: false,
