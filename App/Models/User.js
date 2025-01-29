@@ -1,5 +1,6 @@
 import { model, Schema } from "mongoose";
 import jwt from "jsonwebtoken";
+import { Role } from "../Common/common.js";
 
 export const UserSchema = new Schema(
   {
@@ -24,9 +25,9 @@ export const UserSchema = new Schema(
         message: (props) => `${props.value} is not a valid phone number!`,
       },
     },
-    isAdmin: {
-      type: Boolean,
-      default: false,
+    role: {
+      type: String,
+      default: Role.USER,
     },
     isVerified: {
       type: Boolean,
@@ -48,4 +49,4 @@ UserSchema.methods.generateAuthToken = function () {
   );
 };
 
-export default model("User", UserSchema);
+export const User = model('User', UserSchema);
