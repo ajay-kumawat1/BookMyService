@@ -1,3 +1,4 @@
+import fs from "fs";
 import nodemailer from "nodemailer";
 
 const transporter = nodemailer.createTransport({
@@ -10,14 +11,24 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-export const sendMail = async (email, otp) => {
-  const info = await transporter.sendMail({
-    from: "bookmyservice786@gmail.com",
-    to: email,
-    subject: "Hello ✔",
-    text: ``,
-    html: `<b>Your OTP is ${otp} for verification</b>`,
-  });
+export const sendMail = async (email, firstName, otp, emailTemplatePath) => {
+  try {
+    const emailTemplate = fs.readFileSync(emailTemplatePath, "utf-8");
+    const emailHtml = emailTemplate
+      .replace("{{OTP}}", otp)
+      .replace("{{NAME}}", firstName)
+      .replace("{{DATE}}", new Date().toDateString());
 
-  console.log("Message sent: %s", info.messageId);
+    const info = await transporter.sendMail({
+      from: "bookmyservice786@gmail.com",
+      to: email,
+      subject: "Your OTP Code",
+      text: `Your OTP code is ${otp}`,
+      html: emailHtml,
+    });
+
+    console.log("Message sent: %s", info.messageId);
+  } catch (error) {
+    console.error("Error sending email:", error);
+  }
 };
