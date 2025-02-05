@@ -139,8 +139,52 @@ const login = async (req, res) => {
   }
 };
 
+const resendOtp = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) {
+      return sendResponse(
+        res,
+        {},
+        "User not found",
+        RESPONSE_FAILURE,
+        RESPONSE_CODE.NOT_FOUND
+      );
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    res.cookie("otp", otp, {
+      httpOnly: true,
+      secure: true,
+      maxAge: 5 * 60 * 1000, // 5 minutes
+    });
+
+    // Email template path
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+    const emailTemplatePath = path.join(
+      __dirname,
+      "../../Common/email_template/signup_email_template.html"
+    );
+
+    await sendMail(email, user.firstName, otp, emailTemplatePath);
+
+    return sendResponse(
+      res,
+      {},
+      "OTP sent successfully",
+      RESPONSE_SUCCESS,
+      RESPONSE_CODE.SUCCESS
+    );
+  } catch (error) {
+    console.error(`UserController.resendOtp() -> Error: ${error}`);
+  }
+};
+
 export default {
   create,
   verifyOtpAndCreateUser,
   login,
+  resendOtp,
 };
