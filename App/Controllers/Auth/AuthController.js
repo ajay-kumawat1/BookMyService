@@ -103,9 +103,39 @@ const verifyOtpAndCreateUser = async (req, res) => {
 
 const login = async (req, res) => {
   try {
-    console.log("login");
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return sendResponse(
+        res,
+        {},
+        "User not found",
+        RESPONSE_FAILURE,
+        RESPONSE_CODE.NOT_FOUND
+      );
+    }
+
+    const isPasswordMatch = await bcrypt.compare(password, user.password);
+    if (!isPasswordMatch) {
+      return sendResponse(
+        res,
+        {},
+        "Invalid password",
+        RESPONSE_FAILURE,
+        RESPONSE_CODE.UNAUTHORISED
+      );
+    }
+
+    return sendResponse(
+      res,
+      user,
+      "User logged in successfully",
+      RESPONSE_SUCCESS,
+      RESPONSE_CODE.SUCCESS
+    );
   } catch (error) {
-    console.log(error);
+    console.error(`UserController.Login() -> Error: ${error}`);
   }
 };
 
