@@ -11,5 +11,6 @@ route.post("/forgot-password", AuthController.forgotPassword);
 route.post("/verify-forgotPassword-otp", AuthController.verifyOtp);
 route.post("/reset-password", AuthController.resetPassword);
 route.get("/:id", AuthController.getMyProfile);
+route.put("/:id", AuthController.updateProfile);
 
 export default route;

@@ -296,6 +296,46 @@ const getMyProfile = async (req, res) => {
   }
 };
 
+const updateProfile = async (req, res) => {
+  try {
+    let user = await User.findOne({ _id: req.params.id });
+    if (!user) {
+      return sendResponse(
+        res,
+        {},
+        "User not found",
+        RESPONSE_FAILURE,
+        RESPONSE_CODE.NOT_FOUND
+      );
+    }
+
+    user = await User.findByIdAndUpdate(
+      req.params.id,
+      { $set: req.body },
+      { new: true }
+    );
+    if (!user) {
+      return sendResponse(
+        res,
+        {},
+        "Failed to update profile",
+        RESPONSE_FAILURE,
+        RESPONSE_CODE.BAD_REQUEST
+      );
+    }
+
+    return sendResponse(
+      res,
+      user,
+      "Profile updated successfully",
+      RESPONSE_SUCCESS,
+      RESPONSE_CODE.SUCCESS
+    );
+  } catch (error) {
+    console.error(`UserController.updateProfile() -> Error: ${error}`);
+  }
+};
+
 export default {
   create,
   verifyOtpAndCreateUser,
@@ -305,4 +345,5 @@ export default {
   verifyOtp,
   resetPassword,
   getMyProfile,
+  updateProfile,
 };
