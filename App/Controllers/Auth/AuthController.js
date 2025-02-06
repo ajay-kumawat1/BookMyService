@@ -257,10 +257,7 @@ const resetPassword = async (req, res) => {
     const { email, password } = req.body;
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    await User.findOneAndUpdate(
-      { email: email },
-      { password: hashedPassword }
-    );
+    await User.findOneAndUpdate({ email: email }, { password: hashedPassword });
 
     return sendResponse(
       res,
@@ -274,6 +271,31 @@ const resetPassword = async (req, res) => {
   }
 };
 
+const getMyProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return sendResponse(
+        res,
+        {},
+        "User not found",
+        RESPONSE_FAILURE,
+        RESPONSE_CODE.NOT_FOUND
+      );
+    }
+
+    return sendResponse(
+      res,
+      user,
+      "User fetched successfully",
+      RESPONSE_SUCCESS,
+      RESPONSE_CODE.SUCCESS
+    );
+  } catch (error) {
+    console.error(`UserController.getMyProfile() -> Error: ${error}`);
+  }
+};
+
 export default {
   create,
   verifyOtpAndCreateUser,
@@ -282,4 +304,5 @@ export default {
   forgotPassword,
   verifyOtp,
   resetPassword,
+  getMyProfile,
 };
