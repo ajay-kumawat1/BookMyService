@@ -1,5 +1,6 @@
 import { model, Schema } from "mongoose";
 import jwt from "jsonwebtoken";
+import { Role } from "../Common/common.js";
 
 export const UserSchema = new Schema(
   {
@@ -13,9 +14,24 @@ export const UserSchema = new Schema(
     },
     email: { type: String, required: true },
     password: { type: String, default: null },
-    isAdmin: {
-      type: Boolean,
-      default: false,
+    phoneNumber: {
+      type: String,
+      default: null,
+      unique: true,
+      validate: {
+        validator: function (v) {
+          return /\d{10}/.test(v); // Validates 10-digit phone numbers
+        },
+        message: (props) => `${props.value} is not a valid phone number!`,
+      },
+    },
+    avatar: {
+      type: String,
+      default: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTnFcoNkDNEQ9sXq36dfEj8FZjB4n_X3VFFew&s'
+    },
+    role: {
+      type: String,
+      default: Role.USER,
     },
     isVerified: {
       type: Boolean,
@@ -37,4 +53,4 @@ UserSchema.methods.generateAuthToken = function () {
   );
 };
 
-export default model("User", UserSchema);
+export const User = model('User', UserSchema);
