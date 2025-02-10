@@ -1,14 +1,19 @@
 import { Router } from "express";
 import AuthController from "./AuthController.js";
 
-const route = Router();
+const router = Router();
 
-route.post("/signup", AuthController.register);
-route.post("/login", AuthController.login);
-route.post("/verify-otp", AuthController.verifyOtpAndCreateUser);
-route.post("/resend-otp", AuthController.resendOtp);
-route.post("/forgot-password", AuthController.forgotPassword);
-route.post("/verify-forgotPassword-otp", AuthController.verifyOtp);
-route.post("/reset-password", AuthController.resetPassword);
+// **Signup & Account Verification**
+router.post("/register", AuthController.register);
+router.post("/verify-otp", AuthController.verifyOtp);
+router.post("/resend-otp", AuthController.resendOtp);
 
-export default route;
+// **Authentication**
+router.post("/login", AuthController.login);
+
+// **Password Reset**
+router.post("/forgot-password", AuthController.forgotPassword);
+router.post("/verify-forgot-password-otp", AuthController.verifyOtp);
+router.post("/reset-password", AuthController.resetPassword);
+
+export default router;
