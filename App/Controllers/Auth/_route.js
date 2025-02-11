@@ -1,10 +1,13 @@
 import { Router } from "express";
 import AuthController from "./AuthController.js";
+import {
+  validateRegister,
+} from "../../Middleware/auth.middleware.js";
 
 const router = Router();
 
 // **Signup & Account Verification**
-router.post("/register", AuthController.register);
+router.post("/register", validateRegister, AuthController.register);
 router.post("/verify-otp", AuthController.verifyOtp);
 router.post("/resend-otp", AuthController.resendOtp);
 
