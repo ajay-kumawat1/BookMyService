@@ -46,5 +46,37 @@ const validateRegister = async (req, res, next) => {
   }
 };
 
-export { validateRegister };
- 
+const validateLogin = async (req, res, next) => {
+  if (isEmpty(req.body)) {
+    return sendResponse(
+      res,
+      {},
+      "Login data is not valid",
+      RESPONSE_FAILURE,
+      RESPONSE_CODE.BAD_REQUEST
+    );
+  }
+
+  const loginSchema = Joi.object({
+    email: Joi.string().email().required(),
+    password: Joi.string().required(),
+  });
+
+  const { error, value } = loginSchema.validate(req.body);
+  if (error) {
+    return sendResponse(
+      res,
+      {},
+      `${"Login data is not valid"}}: ${error.details
+        .map((x) => x.message.replace(/"/g, ""))
+        .join(", ")}`,
+      RESPONSE_FAILURE,
+      RESPONSE_CODE.BAD_REQUEST
+    );
+  }
+
+  req.body = value;
+  next();
+};
+
+export { validateRegister, validateLogin };
