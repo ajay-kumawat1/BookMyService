@@ -101,7 +101,7 @@ const verifyOtp = async (req, res) => {
         {},
         "Invalid or expired OTP",
         RESPONSE_FAILURE,
-        RESPONSE_CODE.UNAUTHORIZED
+        RESPONSE_CODE.UNAUTHORISED
       );
     }
 

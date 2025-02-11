@@ -79,4 +79,45 @@ const validateLogin = async (req, res, next) => {
   next();
 };
 
-export { validateRegister, validateLogin };
+const validateResetPassword = async (req, res, next) => {
+  if (isEmpty(req.params.token)) {
+    return sendResponse(
+      res,
+      {},
+      locale("RESET_PASSWORD_INVALID_DATA"),
+      RESPONSE_FAILURE,
+      RESPONSE_CODE.BAD_REQUEST
+    );
+  }
+  if (isEmpty(req.body)) {
+    return sendResponse(
+      res,
+      {},
+      locale("RESET_PASSWORD_INVALID_DATA"),
+      RESPONSE_FAILURE,
+      RESPONSE_CODE.BAD_REQUEST
+    );
+  }
+
+  const resetPasswordSchema = Joi.object({
+    password: Joi.string().required().min(8),
+    confirmPassword: Joi.string().required().min(8),
+  });
+
+  const { error, value } = resetPasswordSchema.validate(req.body);
+  if (error) {
+    return sendResponse(
+      res,
+      {},
+      `${locale("RESET_PASSWORD_INVALID_DATA")}: ${error.details
+        .map((x) => x.message.replace(/"/g, ""))
+        .join(", ")}`,
+      RESPONSE_FAILURE,
+      RESPONSE_CODE.BAD_REQUEST
+    );
+  }
+  req.body = value;
+  next();
+};
+
+export { validateRegister, validateLogin, validateResetPassword };
