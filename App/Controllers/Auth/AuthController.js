@@ -1,34 +1,12 @@
-import { sendResponse } from "../../Common/common.js";
+import { generateOtp, sendOtpMail, sendResponse, storeOtpInCookie } from "../../Common/common.js";
 import {
   RESPONSE_CODE,
   RESPONSE_FAILURE,
   RESPONSE_SUCCESS,
 } from "../../Common/constant.js";
-import { sendMail } from "../../Common/mail.js";
 import { verifyOTP } from "../../Common/otpVerification.js";
 import { User } from "../../Models/User.js";
 import bcrypt from "bcrypt";
-import path from "path";
-import { fileURLToPath } from "url";
-
-/** Generates a 6-digit OTP */
-const generateOtp = () =>
-  Math.floor(100000 + Math.random() * 900000).toString();
-
-/** Centralized function to store OTP in cookies */
-const storeOtpInCookie = (res, otp) => {
-  res.cookie("otp", otp, {
-    httpOnly: true,
-    secure: true,
-    maxAge: 5 * 60 * 1000, // 5 minutes
-  });
-};
-
-/** Sends OTP via email */
-const sendOtpMail = async (email, firstName, templatePath, otp) => {
-  const __dirname = path.dirname(fileURLToPath(import.meta.url));
-  await sendMail(email, firstName, otp, path.join(__dirname, templatePath));
-};
 
 /** Registers a user by sending OTP */
 const register = async (req, res) => {
