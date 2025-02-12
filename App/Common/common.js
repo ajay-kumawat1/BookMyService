@@ -1,6 +1,8 @@
 import { sendMail } from "./mail.js";
 import path from "path";
 import { fileURLToPath } from "url";
+import pkg from 'jsonwebtoken';
+const { sign } = pkg;
 
 export async function sendResponse(res, data, message, success, code = 200) {
   const responseObj = {
@@ -32,4 +34,12 @@ export async function storeOtpInCookie(res, otp) {
 export async function sendOtpMail(email, firstName, templatePath, otp) {
   const __dirname = path.dirname(fileURLToPath(import.meta.url));
     await sendMail(email, firstName, otp, path.join(__dirname, templatePath));
+}
+
+export async function signToken(info) {
+  const newToken = sign(info, process.env.JWT_SECRET, {
+      expiresIn: process.env.JWT_EXPIRE,
+  });
+
+  return newToken;
 }

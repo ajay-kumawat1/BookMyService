@@ -1,4 +1,4 @@
-import { generateOtp, sendOtpMail, sendResponse, storeOtpInCookie } from "../../Common/common.js";
+import { generateOtp, sendOtpMail, sendResponse, signToken, storeOtpInCookie } from "../../Common/common.js";
 import {
   RESPONSE_CODE,
   RESPONSE_FAILURE,
@@ -167,13 +167,15 @@ const login = async (req, res) => {
         {},
         "Invalid email or password",
         RESPONSE_FAILURE,
-        RESPONSE_CODE.UNAUTHORIZED
+        RESPONSE_CODE.UNAUTHORISED
       );
     }
 
+    const token = await signToken(user);
+
     return sendResponse(
       res,
-      user,
+      {user, token},
       "User logged in successfully",
       RESPONSE_SUCCESS,
       RESPONSE_CODE.SUCCESS
@@ -284,7 +286,7 @@ const resetPassword = async (req, res) => {
         {},
         "Session expired or invalid request",
         RESPONSE_FAILURE,
-        RESPONSE_CODE.UNAUTHORIZED
+        RESPONSE_CODE.UNAUTHORISED
       );
     }
 
