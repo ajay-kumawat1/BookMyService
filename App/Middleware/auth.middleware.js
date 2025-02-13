@@ -3,6 +3,8 @@ import { sendResponse } from "../Common/common.js";
 import { RESPONSE_CODE, RESPONSE_FAILURE } from "../Common/constant.js";
 import pkg from "lodash";
 const { isEmpty } = pkg;
+import jwt from "jsonwebtoken";
+import { User } from "../Models/User.js";
 
 const validateRegister = async (req, res, next) => {
   try {
@@ -120,4 +122,31 @@ const validateResetPassword = async (req, res, next) => {
   next();
 };
 
-export { validateRegister, validateLogin, validateResetPassword };
+const validJWTNeeded = async (req, res, next) => {
+  const authToken = req.headers.authorization;
+  if (!authToken || !authToken.startsWith("Bearer")) {
+    return sendResponse(res, {}, "You must login first", true, 401);
+  }
+  const token = authToken.split(" ")[1];
+  
+  try {
+    const decode = jwt.verify(token, process.env.JWT_SECRET);
+
+    const user = await User.findById(decode.user.id);
+    if (user) {
+      req.user = decode.user;
+      return next();
+    } else {
+      return sendResponse(res, {}, "Invalid token", false, 498);
+    }
+  } catch (error) {
+    return sendResponse(res, [error], "Token not verified", false, 401);
+  }
+};
+
+export {
+  validateRegister,
+  validateLogin,
+  validateResetPassword,
+  validJWTNeeded,
+};
