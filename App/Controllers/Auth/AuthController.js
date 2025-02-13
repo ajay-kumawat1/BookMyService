@@ -1,4 +1,11 @@
-import { generateOtp, sendOtpMail, sendResponse, signToken, storeOtpInCookie } from "../../Common/common.js";
+import {
+  generateOtp,
+  hashPassword,
+  sendOtpMail,
+  sendResponse,
+  signToken,
+  storeOtpInCookie,
+} from "../../Common/common.js";
 import {
   RESPONSE_CODE,
   RESPONSE_FAILURE,
@@ -6,7 +13,7 @@ import {
 } from "../../Common/constant.js";
 import { verifyOTP } from "../../Common/otpVerification.js";
 import { User } from "../../Models/User.js";
-import bcrypt from "bcrypt";
+import { compare } from "bcrypt";
 
 /** Registers a user by sending OTP */
 const register = async (req, res) => {
@@ -23,12 +30,12 @@ const register = async (req, res) => {
       );
     }
 
-    const otp = generateOtp();
+    const otp = await generateOtp();
     storeOtpInCookie(res, otp);
     await sendOtpMail(
       email,
       firstName,
-      "../../Common/email_template/signup_email_template.html",
+      "/email_template/signup_email_template.html",
       otp
     );
 
@@ -87,7 +94,7 @@ const verifyOtpAndCreateUser = async (req, res) => {
 
     const user = await User.create({
       ...userData,
-      password: await bcrypt.hash(userData.password, 10),
+      password: await hashPassword(userData.password),
       isVerified: true,
       role: "User",
     });
@@ -127,12 +134,12 @@ const resendOtp = async (req, res) => {
         RESPONSE_CODE.NOT_FOUND
       );
 
-    const otp = generateOtp();
+    const otp = await generateOtp();
     storeOtpInCookie(res, otp);
     await sendOtpMail(
       email,
       user.firstName,
-      "../../Common/email_template/signup_email_template.html",
+      "/email_template/signup_email_template.html",
       otp
     );
 
@@ -161,7 +168,7 @@ const login = async (req, res) => {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
 
-    if (!user || !(await bcrypt.compare(password, user.password))) {
+    if (!user || !(await compare(password, user.password))) {
       return sendResponse(
         res,
         {},
@@ -171,11 +178,22 @@ const login = async (req, res) => {
       );
     }
 
-    const token = await signToken(user);
+    // Return the JWT using jsonwebtoken
+    const payload = {
+      user: {
+        id: user._id,
+        role: user.role,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+      },
+    };
+
+    const token = await signToken(payload);
 
     return sendResponse(
       res,
-      {user, token},
+      { user, token },
       "User logged in successfully",
       RESPONSE_SUCCESS,
       RESPONSE_CODE.SUCCESS
@@ -206,7 +224,7 @@ const forgotPassword = async (req, res) => {
         RESPONSE_CODE.NOT_FOUND
       );
 
-    const otp = generateOtp();
+    const otp = await generateOtp();
     storeOtpInCookie(res, otp);
     res.cookie("resetEmail", email, {
       httpOnly: true,
@@ -261,7 +279,6 @@ const forgotPasswordVerifyOtp = (req, res) => {
       RESPONSE_SUCCESS,
       RESPONSE_CODE.SUCCESS
     );
-    
   } catch (error) {
     console.error("Verify OTP Error:", error);
     return sendResponse(
