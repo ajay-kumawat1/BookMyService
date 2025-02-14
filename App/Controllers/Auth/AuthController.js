@@ -1,21 +1,26 @@
-import { sendResponse } from "../../Common/common.js";
+import {
+  generateOtp,
+  hashPassword,
+  sendOtpMail,
+  sendResponse,
+  signToken,
+  storeOtpInCookie,
+} from "../../Common/common.js";
 import {
   RESPONSE_CODE,
   RESPONSE_FAILURE,
   RESPONSE_SUCCESS,
 } from "../../Common/constant.js";
-import { sendMail } from "../../Common/mail.js";
+import { verifyOTP } from "../../Common/otpVerification.js";
 import { User } from "../../Models/User.js";
-import bcrypt from "bcrypt";
-import path from "path";
-import { fileURLToPath } from "url";
+import { compare } from "bcrypt";
 
-const create = async (req, res) => {
+/** Registers a user by sending OTP */
+const register = async (req, res) => {
   try {
-    const { firstName, email, password } = req.body;
+    const { firstName, lastName, email, password, phoneNumber } = req.body;
 
-    const isEmailExist = await User.findOne({ email });
-    if (isEmailExist) {
+    if (await User.findOne({ email })) {
       return sendResponse(
         res,
         {},
@@ -25,23 +30,24 @@ const create = async (req, res) => {
       );
     }
 
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    res.cookie("otp", otp, {
-      httpOnly: true,
-      secure: true,
-      maxAge: 5 * 60 * 1000, // 5 minutes
-    });
-    const otps = req.cookies.otp; // Access OTP from cookies
-
-    // Email template path
-    const __filename = fileURLToPath(import.meta.url);
-    const __dirname = path.dirname(__filename);
-    const emailTemplatePath = path.join(
-      __dirname,
-      "../../Common/email_template/signup_email_template.html"
+    const otp = await generateOtp();
+    storeOtpInCookie(res, otp);
+    await sendOtpMail(
+      email,
+      firstName,
+      "/email_template/signup_email_template.html",
+      otp
     );
 
-    await sendMail(email, firstName, otp, emailTemplatePath);
+    res.cookie(
+      "user_data",
+      JSON.stringify({ firstName, lastName, email, password, phoneNumber }),
+      {
+        httpOnly: true,
+        secure: true,
+        maxAge: 5 * 60 * 1000,
+      }
+    );
 
     return sendResponse(
       res,
@@ -51,7 +57,7 @@ const create = async (req, res) => {
       RESPONSE_CODE.SUCCESS
     );
   } catch (error) {
-    console.error(`UserController.sendOtp() -> Error: ${error}`);
+    console.error("Register Error:", error);
     return sendResponse(
       res,
       {},
@@ -62,129 +68,154 @@ const create = async (req, res) => {
   }
 };
 
+/** Verifies OTP and creates user */
 const verifyOtpAndCreateUser = async (req, res) => {
   try {
-    const { firstName, email, password, otp } = req.body;
-    const storedOtp = req.cookies.otp;
-
-    if (!storedOtp || storedOtp !== otp) {
+    const otpVerify = verifyOTP(req.cookies.otp, req.body.otp);
+    if (!otpVerify) {
       return sendResponse(
         res,
         {},
-        "Invalid or expired OTP",
+        "OTP verification failed",
         RESPONSE_FAILURE,
         RESPONSE_CODE.UNAUTHORISED
       );
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const userData = JSON.parse(req.cookies.user_data || "{}");
+    if (!userData.email)
+      return sendResponse(
+        res,
+        {},
+        "User data missing. Please register again.",
+        RESPONSE_FAILURE,
+        RESPONSE_CODE.BAD_REQUEST
+      );
 
     const user = await User.create({
-      ...req.body,
-      password: hashedPassword,
+      ...userData,
+      password: await hashPassword(userData.password),
+      isVerified: true,
       role: "User",
     });
 
-    res.clearCookie("otp"); // Remove OTP after successful verification
-
+    res.clearCookie("user_data");
     return sendResponse(
       res,
       user,
-      "User created successfully",
+      "User registered successfully",
       RESPONSE_SUCCESS,
       RESPONSE_CODE.CREATED
     );
   } catch (error) {
-    console.error(`UserController.verifyOtpAndCreateUser() -> Error: ${error}`);
+    console.error("User Creation Error:", error);
+    return sendResponse(
+      res,
+      {},
+      "Failed to create user",
+      RESPONSE_FAILURE,
+      RESPONSE_CODE.INTERNAL_SERVER_ERROR
+    );
   }
 };
 
+/** Resends OTP */
+const resendOtp = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+
+    if (!user)
+      return sendResponse(
+        res,
+        {},
+        "User not found",
+        RESPONSE_FAILURE,
+        RESPONSE_CODE.NOT_FOUND
+      );
+
+    const otp = await generateOtp();
+    storeOtpInCookie(res, otp);
+    await sendOtpMail(
+      email,
+      user.firstName,
+      "/email_template/signup_email_template.html",
+      otp
+    );
+
+    return sendResponse(
+      res,
+      {},
+      "OTP resent successfully",
+      RESPONSE_SUCCESS,
+      RESPONSE_CODE.SUCCESS
+    );
+  } catch (error) {
+    console.error("Resend OTP Error:", error);
+    return sendResponse(
+      res,
+      {},
+      "Failed to resend OTP",
+      RESPONSE_FAILURE,
+      RESPONSE_CODE.INTERNAL_SERVER_ERROR
+    );
+  }
+};
+
+/** Logs in a user */
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
 
-    if (!user) {
+    if (!user || !(await compare(password, user.password))) {
       return sendResponse(
         res,
         {},
-        "User not found",
-        RESPONSE_FAILURE,
-        RESPONSE_CODE.NOT_FOUND
-      );
-    }
-
-    const isPasswordMatch = await bcrypt.compare(password, user.password);
-    if (!isPasswordMatch) {
-      return sendResponse(
-        res,
-        {},
-        "Invalid password",
+        "Invalid email or password",
         RESPONSE_FAILURE,
         RESPONSE_CODE.UNAUTHORISED
       );
     }
 
+    // Return the JWT using jsonwebtoken
+    const payload = {
+      user: {
+        id: user._id,
+        role: user.role,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+      },
+    };
+
+    const token = await signToken(payload);
+
     return sendResponse(
       res,
-      user,
+      { user, token },
       "User logged in successfully",
       RESPONSE_SUCCESS,
       RESPONSE_CODE.SUCCESS
     );
   } catch (error) {
-    console.error(`UserController.Login() -> Error: ${error}`);
-  }
-};
-
-const resendOtp = async (req, res) => {
-  try {
-    const { email } = req.body;
-    const user = await User.findOne({ email });
-    if (!user) {
-      return sendResponse(
-        res,
-        {},
-        "User not found",
-        RESPONSE_FAILURE,
-        RESPONSE_CODE.NOT_FOUND
-      );
-    }
-
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    res.cookie("otp", otp, {
-      httpOnly: true,
-      secure: true,
-      maxAge: 5 * 60 * 1000, // 5 minutes
-    });
-
-    // Email template path
-    const __filename = fileURLToPath(import.meta.url);
-    const __dirname = path.dirname(__filename);
-    const emailTemplatePath = path.join(
-      __dirname,
-      "../../Common/email_template/signup_email_template.html"
-    );
-
-    await sendMail(email, user.firstName, otp, emailTemplatePath);
-
+    console.error("Login Error:", error);
     return sendResponse(
       res,
       {},
-      "OTP sent successfully",
-      RESPONSE_SUCCESS,
-      RESPONSE_CODE.SUCCESS
+      "Failed to login",
+      RESPONSE_FAILURE,
+      RESPONSE_CODE.INTERNAL_SERVER_ERROR
     );
-  } catch (error) {
-    console.error(`UserController.resendOtp() -> Error: ${error}`);
   }
 };
 
+/** Handles forgot password by sending OTP */
 const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
     const user = await User.findOne({ email });
-    if (!user) {
+    if (!user)
       return sendResponse(
         res,
         {},
@@ -192,24 +223,21 @@ const forgotPassword = async (req, res) => {
         RESPONSE_FAILURE,
         RESPONSE_CODE.NOT_FOUND
       );
-    }
 
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    res.cookie("otp", otp, {
+    const otp = await generateOtp();
+    storeOtpInCookie(res, otp);
+    res.cookie("resetEmail", email, {
       httpOnly: true,
       secure: true,
-      maxAge: 5 * 60 * 1000, // 5 minutes
+      maxAge: 5 * 60 * 1000,
     });
 
-    // Email template path
-    const __filename = fileURLToPath(import.meta.url);
-    const __dirname = path.dirname(__filename);
-    const emailTemplatePath = path.join(
-      __dirname,
-      "../../Common/email_template/forgot_password_email_template.html"
+    await sendOtpMail(
+      email,
+      user.firstName,
+      "../../Common/email_template/signup_email_template.html",
+      otp
     );
-
-    await sendMail(email, user.firstName, otp, emailTemplatePath);
 
     return sendResponse(
       res,
@@ -219,26 +247,30 @@ const forgotPassword = async (req, res) => {
       RESPONSE_CODE.SUCCESS
     );
   } catch (error) {
-    console.error(`UserController.forgotPassword() -> Error: ${error}`);
+    console.error("Forgot Password Error:", error);
+    return sendResponse(
+      res,
+      {},
+      "Failed to send OTP",
+      RESPONSE_FAILURE,
+      RESPONSE_CODE.INTERNAL_SERVER_ERROR
+    );
   }
 };
 
-const verifyOtp = async (req, res) => {
+/** Verifies OTP */
+const forgotPasswordVerifyOtp = (req, res) => {
   try {
-    const { otp } = req.body;
-    const storedOtp = req.cookies.otp;
-
-    if (!storedOtp || storedOtp !== otp) {
+    const otpVerify = verifyOTP(req.cookies.otp, req.body.otp);
+    if (!otpVerify) {
       return sendResponse(
         res,
         {},
-        "Invalid or expired OTP",
+        "OTP verification failed",
         RESPONSE_FAILURE,
         RESPONSE_CODE.UNAUTHORISED
       );
     }
-
-    res.clearCookie("otp"); // Remove OTP after successful verification
 
     return sendResponse(
       res,
@@ -248,16 +280,48 @@ const verifyOtp = async (req, res) => {
       RESPONSE_CODE.SUCCESS
     );
   } catch (error) {
-    console.error(`UserController.verifyOtp() -> Error: ${error}`);
+    console.error("Verify OTP Error:", error);
+    return sendResponse(
+      res,
+      {},
+      "Failed to verify OTP",
+      RESPONSE_FAILURE,
+      RESPONSE_CODE.INTERNAL_SERVER_ERROR
+    );
   }
 };
 
+/** Resets the user's password */
 const resetPassword = async (req, res) => {
   try {
-    const { email, password } = req.body;
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const { password, confirmPassword } = req.body;
 
-    await User.findOneAndUpdate({ email: email }, { password: hashedPassword });
+    const email = req.cookies.resetEmail;
+    if (!email) {
+      return sendResponse(
+        res,
+        {},
+        "Session expired or invalid request",
+        RESPONSE_FAILURE,
+        RESPONSE_CODE.UNAUTHORISED
+      );
+    }
+
+    if (password !== confirmPassword) {
+      return sendResponse(
+        res,
+        {},
+        "Passwords do not match",
+        RESPONSE_FAILURE,
+        RESPONSE_CODE.BAD_REQUEST
+      );
+    }
+
+    await User.findOneAndUpdate(
+      { email },
+      { password: await bcrypt.hash(password, 10) }
+    );
+    res.clearCookie("resetEmail");
 
     return sendResponse(
       res,
@@ -267,83 +331,23 @@ const resetPassword = async (req, res) => {
       RESPONSE_CODE.SUCCESS
     );
   } catch (error) {
-    console.error(`UserController.resetPassword() -> Error: ${error}`);
-  }
-};
-
-const getMyProfile = async (req, res) => {
-  try {
-    const user = await User.findById(req.params.id);
-    if (!user) {
-      return sendResponse(
-        res,
-        {},
-        "User not found",
-        RESPONSE_FAILURE,
-        RESPONSE_CODE.NOT_FOUND
-      );
-    }
-
+    console.error("Reset Password Error:", error);
     return sendResponse(
       res,
-      user,
-      "User fetched successfully",
-      RESPONSE_SUCCESS,
-      RESPONSE_CODE.SUCCESS
+      {},
+      "Failed to reset password",
+      RESPONSE_FAILURE,
+      RESPONSE_CODE.INTERNAL_SERVER_ERROR
     );
-  } catch (error) {
-    console.error(`UserController.getMyProfile() -> Error: ${error}`);
-  }
-};
-
-const updateProfile = async (req, res) => {
-  try {
-    let user = await User.findOne({ _id: req.params.id });
-    if (!user) {
-      return sendResponse(
-        res,
-        {},
-        "User not found",
-        RESPONSE_FAILURE,
-        RESPONSE_CODE.NOT_FOUND
-      );
-    }
-
-    user = await User.findByIdAndUpdate(
-      req.params.id,
-      { $set: req.body },
-      { new: true }
-    );
-    if (!user) {
-      return sendResponse(
-        res,
-        {},
-        "Failed to update profile",
-        RESPONSE_FAILURE,
-        RESPONSE_CODE.BAD_REQUEST
-      );
-    }
-
-    return sendResponse(
-      res,
-      user,
-      "Profile updated successfully",
-      RESPONSE_SUCCESS,
-      RESPONSE_CODE.SUCCESS
-    );
-  } catch (error) {
-    console.error(`UserController.updateProfile() -> Error: ${error}`);
   }
 };
 
 export default {
-  create,
+  register,
   verifyOtpAndCreateUser,
   login,
   resendOtp,
   forgotPassword,
-  verifyOtp,
+  forgotPasswordVerifyOtp,
   resetPassword,
-  getMyProfile,
-  updateProfile,
 };

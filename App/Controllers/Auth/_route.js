@@ -1,16 +1,29 @@
 import { Router } from "express";
 import AuthController from "./AuthController.js";
+import {
+  validateLogin,
+  validateRegister,
+  validateResetPassword,
+  validJWTNeeded,
+} from "../../Middleware/auth.middleware.js";
 
-const route = Router();
+const router = Router();
 
-route.post("/signup", AuthController.create);
-route.post("/login", AuthController.login);
-route.post("/verify-otp", AuthController.verifyOtpAndCreateUser);
-route.post("/resend-otp", AuthController.resendOtp);
-route.post("/forgot-password", AuthController.forgotPassword);
-route.post("/verify-forgotPassword-otp", AuthController.verifyOtp);
-route.post("/reset-password", AuthController.resetPassword);
-route.get("/:id", AuthController.getMyProfile);
-route.put("/:id", AuthController.updateProfile);
+// **User Registration & OTP Verification**
+router.post("/register", validateRegister, AuthController.register);
+router.post("/verifyAndCreateUser", AuthController.verifyOtpAndCreateUser);
+router.post("/resendOtp", validJWTNeeded, AuthController.resendOtp);
 
-export default route;
+// **Authentication**
+router.post("/login", validateLogin, AuthController.login);
+
+// **Password Reset**
+router.post("/forgotPassword", AuthController.forgotPassword);
+router.post("/verifyOtp", AuthController.forgotPasswordVerifyOtp);
+router.post(
+  "/resetPassword",
+  validateResetPassword,
+  AuthController.resetPassword
+);
+
+export default router;

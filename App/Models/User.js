@@ -16,7 +16,6 @@ export const UserSchema = new Schema(
     password: { type: String, default: null },
     phoneNumber: {
       type: String,
-      default: null,
       unique: true,
       validate: {
         validator: function (v) {
