@@ -26,4 +26,7 @@ router.post(
   AuthController.resetPassword
 );
 
+// ** Business Owner Registration **
+router.post("/registerBusinessOwner", AuthController.registerBusinessOwner);
+
 export default router;
