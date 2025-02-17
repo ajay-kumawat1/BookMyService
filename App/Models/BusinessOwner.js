@@ -120,4 +120,4 @@ const BusinessSchema = new Schema(
   }
 );
 
-export const Business = model("Business", BusinessSchema);
+export const BusinessOwner = model("BusinessOwner", BusinessSchema);

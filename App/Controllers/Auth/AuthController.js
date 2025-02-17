@@ -12,10 +12,10 @@ import {
   RESPONSE_SUCCESS,
 } from "../../Common/constant.js";
 import { verifyOTP } from "../../Common/otpVerification.js";
+import { BusinessOwner } from "../../Models/BusinessOwner.js";
 import { User } from "../../Models/User.js";
 import { compare } from "bcrypt";
 
-/** Registers a user by sending OTP */
 const register = async (req, res) => {
   try {
     const { firstName, lastName, email, password, phoneNumber } = req.body;
@@ -68,7 +68,6 @@ const register = async (req, res) => {
   }
 };
 
-/** Verifies OTP and creates user */
 const verifyOtpAndCreateUser = async (req, res) => {
   try {
     const otpVerify = verifyOTP(req.cookies.otp, req.body.otp);
@@ -119,7 +118,6 @@ const verifyOtpAndCreateUser = async (req, res) => {
   }
 };
 
-/** Resends OTP */
 const resendOtp = async (req, res) => {
   try {
     const { email } = req.body;
@@ -162,7 +160,6 @@ const resendOtp = async (req, res) => {
   }
 };
 
-/** Logs in a user */
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -210,7 +207,6 @@ const login = async (req, res) => {
   }
 };
 
-/** Handles forgot password by sending OTP */
 const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
@@ -235,7 +231,7 @@ const forgotPassword = async (req, res) => {
     await sendOtpMail(
       email,
       user.firstName,
-      "../../Common/email_template/signup_email_template.html",
+      "/email_template/signup_email_template.html",
       otp
     );
 
@@ -258,7 +254,6 @@ const forgotPassword = async (req, res) => {
   }
 };
 
-/** Verifies OTP */
 const forgotPasswordVerifyOtp = (req, res) => {
   try {
     const otpVerify = verifyOTP(req.cookies.otp, req.body.otp);
@@ -291,7 +286,6 @@ const forgotPasswordVerifyOtp = (req, res) => {
   }
 };
 
-/** Resets the user's password */
 const resetPassword = async (req, res) => {
   try {
     const { password, confirmPassword } = req.body;
@@ -342,6 +336,90 @@ const resetPassword = async (req, res) => {
   }
 };
 
+const registerBusinessOwner = async (req, res) => {
+  try {
+    const {
+      ownerFirstName,
+      ownerLastName,
+      email,
+      password,
+      phoneNumber,
+      businessName,
+      businessCategory,
+      businessDescription,
+      businessAddress,
+      city,
+      state,
+      zipCode,
+      country,
+    } = req.body;
+
+    if (await BusinessOwner.findOne({ email })) {
+      return sendResponse(
+        res,
+        {},
+        "Email already exists",
+        RESPONSE_FAILURE,
+        RESPONSE_CODE.BAD_REQUEST
+      );
+    }
+
+    const otp = await generateOtp();
+    storeOtpInCookie(res, otp);
+    await sendOtpMail(
+      email,
+      ownerFirstName,
+      "/email_template/signup_email_template.html",
+      otp
+    );
+
+    res.cookie(
+      "business_owner_data",
+      JSON.stringify({
+        personalInfo: {
+          ownerFirstName: ownerFirstName,
+          ownerLastName: ownerLastName,
+          email: email,
+          password: password,
+          phoneNumber: phoneNumber,
+        },
+        businessInfo: {
+          businessName: businessName,
+          businessCategory: businessCategory,
+          businessDescription: businessDescription,
+          businessAddress: businessAddress,
+          city: city,
+          state: state,
+          zipCode: zipCode,
+          country: country,
+        },
+      }),
+      {
+        httpOnly: true,
+        secure: true,
+        maxAge: 5 * 60 * 1000,
+      }
+    );
+
+    return sendResponse(
+      res,
+      {},
+      "OTP sent successfully",
+      RESPONSE_SUCCESS,
+      RESPONSE_CODE.SUCCESS
+    );
+  } catch (error) {
+    console.error("Register Business Owner Error:", error);
+    return sendResponse(
+      res,
+      {},
+      "Failed to register business owner",
+      RESPONSE_FAILURE,
+      RESPONSE_CODE.INTERNAL_SERVER_ERROR
+    );
+  }
+};
+
 export default {
   register,
   verifyOtpAndCreateUser,
@@ -350,4 +428,7 @@ export default {
   forgotPassword,
   forgotPasswordVerifyOtp,
   resetPassword,
+
+  // registerBusinessOwner,
+  registerBusinessOwner,
 };
