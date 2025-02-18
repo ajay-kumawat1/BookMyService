@@ -420,6 +420,59 @@ const registerBusinessOwner = async (req, res) => {
   }
 };
 
+const verifyOtpAndCreateBusinessOwner = async (req, res) => {
+  try {
+    const otpVerify = verifyOTP(req.cookies.otp, req.body.otp);
+    if (!otpVerify) {
+      return sendResponse(
+        res,
+        {},
+        "OTP verification failed",
+        RESPONSE_FAILURE,
+        RESPONSE_CODE.UNAUTHORISED
+      );
+    }
+
+    const businessOwnerData = JSON.parse(req.cookies.business_owner_data || "{}");
+    if (!businessOwnerData.personalInfo.email)
+      return sendResponse(
+        res,
+        {},
+        "Business owner data missing. Please register again.",
+        RESPONSE_FAILURE,
+        RESPONSE_CODE.BAD_REQUEST
+      );
+
+    const businessOwner = await BusinessOwner.create({
+      ...businessOwnerData.personalInfo,
+      ...businessOwnerData.businessInfo,
+      password: await hashPassword(businessOwnerData.personalInfo.password),
+      isVerified: true,
+      role: "Owner",
+    });
+
+    res.clearCookie("business_owner_data");
+    return sendResponse(
+      res,
+      businessOwner,
+      "Business owner registered successfully",
+      RESPONSE_SUCCESS,
+      RESPONSE_CODE.CREATED
+    );
+    
+  } catch (error) {
+    console.error("Business Owner Creation Error:", error);
+    return sendResponse(
+      res,
+      {},
+      "Failed to create business owner",
+      RESPONSE_FAILURE,
+      RESPONSE_CODE.INTERNAL_SERVER_ERROR
+    );
+    
+  }
+}
+
 export default {
   register,
   verifyOtpAndCreateUser,
@@ -431,4 +484,5 @@ export default {
 
   // registerBusinessOwner,
   registerBusinessOwner,
+  verifyOtpAndCreateBusinessOwner,
 };
