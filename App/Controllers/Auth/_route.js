@@ -28,5 +28,9 @@ router.post(
 
 // ** Business Owner Registration **
 router.post("/registerBusinessOwner", AuthController.registerBusinessOwner);
+router.post(
+  "/verifyAndCreateBusinessOwner",
+  AuthController.verifyOtpAndCreateBusinessOwner
+);
 
 export default router;
