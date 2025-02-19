@@ -433,7 +433,9 @@ const verifyOtpAndCreateBusinessOwner = async (req, res) => {
       );
     }
 
-    const businessOwnerData = JSON.parse(req.cookies.business_owner_data || "{}");
+    const businessOwnerData = JSON.parse(
+      req.cookies.business_owner_data || "{}"
+    );
     if (!businessOwnerData.personalInfo.email)
       return sendResponse(
         res,
@@ -459,7 +461,6 @@ const verifyOtpAndCreateBusinessOwner = async (req, res) => {
       RESPONSE_SUCCESS,
       RESPONSE_CODE.CREATED
     );
-    
   } catch (error) {
     console.error("Business Owner Creation Error:", error);
     return sendResponse(
@@ -469,9 +470,55 @@ const verifyOtpAndCreateBusinessOwner = async (req, res) => {
       RESPONSE_FAILURE,
       RESPONSE_CODE.INTERNAL_SERVER_ERROR
     );
-    
   }
-}
+};
+
+const businessOwnerLogin = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const businessOwner = await Business.findOne({ email });
+
+    if (!businessOwner || !(await compare(password, businessOwner.password))) {
+      return sendResponse(
+        res,
+        {},
+        "Invalid email or password",
+        RESPONSE_FAILURE,
+        RESPONSE_CODE.UNAUTHORISED
+      );
+    }
+
+    // Return the JWT using jsonwebtoken
+    const payload = {
+      businessOwner: {
+        id: businessOwner._id,
+        role: businessOwner.role,
+        ownerFirstName: businessOwner.ownerFirstName,
+        ownerLastName: businessOwner.ownerLastName,
+        email: businessOwner.email,
+      },
+    };
+
+    const token = await signToken(payload);
+
+    return sendResponse(
+      res,
+      { businessOwner, token },
+      "Business Owner logged in successfully",
+      RESPONSE_SUCCESS,
+      RESPONSE_CODE.SUCCESS
+    );
+  } catch (error) {
+    console.error("Business Owner Login Error:", error);
+    return sendResponse(
+      res,
+      {},
+      "Failed to login",
+      RESPONSE_FAILURE,
+      RESPONSE_CODE.INTERNAL_SERVER_ERROR
+    );
+  }
+};
 
 export default {
   register,
@@ -485,4 +532,5 @@ export default {
   // registerBusinessOwner,
   registerBusinessOwner,
   verifyOtpAndCreateBusinessOwner,
+  businessOwnerLogin,
 };
