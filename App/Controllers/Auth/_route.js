@@ -32,5 +32,6 @@ router.post(
   "/verifyAndCreateBusinessOwner",
   AuthController.verifyOtpAndCreateBusinessOwner
 );
+router.post("/businessOwnerLogin", AuthController.businessOwnerLogin);
 
 export default router;
