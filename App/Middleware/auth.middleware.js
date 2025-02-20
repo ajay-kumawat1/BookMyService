@@ -4,7 +4,7 @@ import { RESPONSE_CODE, RESPONSE_FAILURE } from "../Common/constant.js";
 import pkg from "lodash";
 const { isEmpty } = pkg;
 import jwt from "jsonwebtoken";
-import { User } from "../Models/User.js";
+import { User } from "../Models/UserModel.js";
 
 const validateRegister = async (req, res, next) => {
   try {

@@ -4,7 +4,7 @@ import {
   RESPONSE_FAILURE,
   RESPONSE_SUCCESS,
 } from "../../Common/constant.js";
-import { User } from "../../Models/User.js";
+import { User } from "../../Models/UserModel.js";
 
 const getMyProfile = async (req, res) => {
   try {

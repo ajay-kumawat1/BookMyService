@@ -12,8 +12,8 @@ import {
   RESPONSE_SUCCESS,
 } from "../../Common/constant.js";
 import { verifyOTP } from "../../Common/otpVerification.js";
-import { BusinessOwner } from "../../Models/BusinessOwner.js";
-import { User } from "../../Models/User.js";
+import { BusinessOwner } from "../../Models/BusinessOwnerModel.js";
+import { User } from "../../Models/UserModel.js";
 import { compare } from "bcrypt";
 
 const register = async (req, res) => {
