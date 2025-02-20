@@ -99,7 +99,7 @@ const BusinessSchema = new Schema(
     },
     paymentMethod: {
       type: String,
-      required: true,
+      required: false,
       enum: ["Bank Transfer", "PayPal", "Stripe"],
     },
     payoutDetails: {
@@ -112,7 +112,7 @@ const BusinessSchema = new Schema(
     },
     termsAccepted: {
       type: Boolean,
-      required: true,
+      required: false,
     },
   },
   {

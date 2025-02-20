@@ -70,7 +70,7 @@ const register = async (req, res) => {
 
 const verifyOtpAndCreateUser = async (req, res) => {
   try {
-    const otpVerify = verifyOTP(req.cookies.otp, req.body.otp);
+    const otpVerify = verifyOTP(req.cookies.otp, req.body.otp, res);
     if (!otpVerify) {
       return sendResponse(
         res,
@@ -256,7 +256,7 @@ const forgotPassword = async (req, res) => {
 
 const forgotPasswordVerifyOtp = (req, res) => {
   try {
-    const otpVerify = verifyOTP(req.cookies.otp, req.body.otp);
+    const otpVerify = verifyOTP(req.cookies.otp, req.body.otp, res);
     if (!otpVerify) {
       return sendResponse(
         res,
@@ -422,7 +422,7 @@ const registerBusinessOwner = async (req, res) => {
 
 const verifyOtpAndCreateBusinessOwner = async (req, res) => {
   try {
-    const otpVerify = verifyOTP(req.cookies.otp, req.body.otp);
+    const otpVerify = verifyOTP(req.cookies.otp, req.body.otp, res);
     if (!otpVerify) {
       return sendResponse(
         res,
@@ -436,6 +436,7 @@ const verifyOtpAndCreateBusinessOwner = async (req, res) => {
     const businessOwnerData = JSON.parse(
       req.cookies.business_owner_data || "{}"
     );
+
     if (!businessOwnerData.personalInfo.email)
       return sendResponse(
         res,
