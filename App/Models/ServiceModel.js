@@ -8,14 +8,14 @@ const serviceSchema = new Schema(
     price: { type: Number, required: false },
     availability: { type: String, required: true }, // Example: "Monday - Friday, 9 AM - 5 PM"
     location: {
-      type: String,
+      type: [String],
       enum: ["on-site", "online", "customer_location"],
       required: true,
     },
     duration: { type: Number, required: false }, // Duration in minutes
     images: { type: [String], required: false }, // Array of image URLs
     booking_type: {
-      type: String,
+      type: [String],
       enum: ["instant", "appointment"],
       required: true,
     },
