@@ -1,4 +1,4 @@
-export function verifyOTP(inputOTP, generatedOTP) {
+export function verifyOTP(inputOTP, generatedOTP, res) {
   if (inputOTP === generatedOTP) {
     res.clearCookie("otp");
     return true;

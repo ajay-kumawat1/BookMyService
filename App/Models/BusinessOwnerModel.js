@@ -71,12 +71,11 @@ const BusinessSchema = new Schema(
       type: String,
       default: "https://example.com/default-business-logo.png",
     },
-    servicesOffered: [
-      {
-        serviceName: { type: String, required: false },
-        price: { type: Number, required: false },
-      },
-    ],
+    role: {
+      type: String,
+      default: "Owner",
+    },
+    servicesOffered: [{ type: Schema.Types.ObjectId, ref: "Service" }],
     workingHours: {
       type: String,
       required: false,

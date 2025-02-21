@@ -5,6 +5,7 @@ import pkg from "lodash";
 const { isEmpty } = pkg;
 import jwt from "jsonwebtoken";
 import { User } from "../Models/UserModel.js";
+import { BusinessOwner } from "../Models/BusinessOwnerModel.js";
 
 const validateRegister = async (req, res, next) => {
   try {
@@ -124,23 +125,26 @@ const validateResetPassword = async (req, res, next) => {
 
 const validJWTNeeded = async (req, res, next) => {
   const authToken = req.headers.authorization;
-  if (!authToken || !authToken.startsWith("Bearer")) {
-    return sendResponse(res, {}, "You must login first", true, 401);
+  if (!authToken || !authToken.startsWith("Bearer ")) {
+    return sendResponse(res, {}, "You must login first", RESPONSE_FAILURE, RESPONSE_CODE.UNAUTHORIZED);
   }
   const token = authToken.split(" ")[1];
-  
+
   try {
     const decode = jwt.verify(token, process.env.JWT_SECRET);
+    const userType = decode.businessOwner ? 'businessOwner' : 'user';
+    const userId = decode[userType].id;
+    const userModel = userType === 'businessOwner' ? BusinessOwner : User;
 
-    const user = await User.findById(decode.user.id);
+    const user = await userModel.findById(userId);
     if (user) {
-      req.user = decode.user;
+      req.user = decode[userType];
       return next();
     } else {
-      return sendResponse(res, {}, "Invalid token", false, 498);
+      return sendResponse(res, {}, "Invalid token", RESPONSE_FAILURE, RESPONSE_CODE.INVALID_TOKEN);
     }
   } catch (error) {
-    return sendResponse(res, [error], "Token not verified", false, 401);
+    return sendResponse(res, [error], "Token not verified", RESPONSE_FAILURE, RESPONSE_CODE.UNAUTHORIZED);
   }
 };
 
