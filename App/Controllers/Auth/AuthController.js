@@ -451,7 +451,6 @@ const verifyOtpAndCreateBusinessOwner = async (req, res) => {
       ...businessOwnerData.businessInfo,
       password: await hashPassword(businessOwnerData.personalInfo.password),
       isVerified: true,
-      role: "Owner",
     });
 
     res.clearCookie("business_owner_data");
@@ -477,7 +476,7 @@ const verifyOtpAndCreateBusinessOwner = async (req, res) => {
 const businessOwnerLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const businessOwner = await Business.findOne({ email });
+    const businessOwner = await BusinessOwner.findOne({ email });
 
     if (!businessOwner || !(await compare(password, businessOwner.password))) {
       return sendResponse(
