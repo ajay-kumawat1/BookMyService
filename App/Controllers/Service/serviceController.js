@@ -9,6 +9,20 @@ import { Service } from "../../Models/ServiceModel.js";
 
 const create = async (req, res) => {
   try {
+    const isExist = await Service.findOne({
+      name: req.body.name,
+      businessOwner: req.user._id,
+    });
+    if (isExist) {
+      return sendResponse(
+        res,
+        {},
+        "Service already exists",
+        RESPONSE_FAILURE,
+        RESPONSE_CODE.BAD_REQUEST
+      );
+    }
+
     const service = await Service.create({
       ...req.body,
       businessOwner: req.user._id,
