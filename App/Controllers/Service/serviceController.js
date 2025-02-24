@@ -94,7 +94,43 @@ const getMy = async (req, res) => {
   }
 };
 
+const getById = async (req, res) => {
+  try {
+    const service = await Service.findOne({
+      _id: req.params.id,
+    });
+    if (!service) {
+      return sendResponse(
+        res,
+        {},
+        "Service not found",
+        RESPONSE_FAILURE,
+        RESPONSE_CODE.NOT_FOUND
+      );
+    }
+
+    return sendResponse(
+      res,
+      service,
+      "Service fetched successfully",
+      RESPONSE_SUCCESS,
+      RESPONSE_CODE.SUCCESS
+    );
+  } catch (error) {
+    console.error(`ServiceController.getById() -> Error:
+    ${error}`);
+    return sendResponse(
+      res,
+      {},
+      "Internal Server Error",
+      RESPONSE_FAILURE,
+      RESPONSE_CODE.INTERNAL_SERVER_ERROR
+    );
+  }
+};
+
 export default {
   create,
   getMy,
+  getById,
 };
