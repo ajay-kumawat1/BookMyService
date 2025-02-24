@@ -14,6 +14,7 @@ const serviceSchema = new Schema(
     },
     duration: { type: Number, required: false }, // Duration in minutes
     images: { type: [String], required: false }, // Array of image URLs
+    businessOwner: { type: Schema.Types.ObjectId, ref: "BusinessOwner" },
     booking_type: {
       type: [String],
       enum: ["instant", "appointment"],

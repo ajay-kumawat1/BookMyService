@@ -5,5 +5,6 @@ import { validJWTNeeded } from "../../Middleware/auth.middleware.js";
 const route = Router();
 
 route.post("/create", validJWTNeeded, serviceController.create);
+route.get("/getMy", validJWTNeeded, serviceController.getMy);
 
 export default route;
