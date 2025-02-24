@@ -20,7 +20,7 @@ const register = async (req, res) => {
   try {
     const { firstName, lastName, email, password, phoneNumber } = req.body;
 
-    if (await User.findOne({ email })) {
+    if (await User.exists({ email })) {
       return sendResponse(
         res,
         {},

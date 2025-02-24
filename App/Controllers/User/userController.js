@@ -5,6 +5,7 @@ import {
   RESPONSE_SUCCESS,
 } from "../../Common/constant.js";
 import { User } from "../../Models/User.js";
+import { uploadImageCloudinary, deleteImageCloudinary } from "../../Services/CloudnaryService.js";
 
 const getMyProfile = async (req, res) => {
   try {
