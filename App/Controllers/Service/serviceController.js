@@ -11,7 +11,7 @@ const create = async (req, res) => {
   try {
     const isExist = await Service.findOne({
       name: req.body.name,
-      businessOwner: req.user._id,
+      businessOwner: req.user.id,
     });
     if (isExist) {
       return sendResponse(
@@ -25,7 +25,7 @@ const create = async (req, res) => {
 
     const service = await Service.create({
       ...req.body,
-      businessOwner: req.user._id,
+      businessOwner: req.user.id,
     });
     if (!service) {
       return sendResponse(
@@ -62,6 +62,39 @@ const create = async (req, res) => {
   }
 };
 
+const getMy = async (req, res) => {
+  try {
+    const services = await Service.find({ businessOwner: req.user.id });
+    if (!services) {
+      return sendResponse(
+        res,
+        {},
+        "No services found",
+        RESPONSE_FAILURE,
+        RESPONSE_CODE.NOT_FOUND
+      );
+    }
+
+    return sendResponse(
+      res,
+      services,
+      "Services fetched successfully",
+      RESPONSE_SUCCESS,
+      RESPONSE_CODE.SUCCESS
+    );
+  } catch (error) {
+    console.error(`ServiceController.getMy() -> Error: ${error}`);
+    return sendResponse(
+      res,
+      {},
+      "Internal Server Error",
+      RESPONSE_FAILURE,
+      RESPONSE_CODE.INTERNAL_SERVER_ERROR
+    );
+  }
+};
+
 export default {
   create,
+  getMy,
 };
