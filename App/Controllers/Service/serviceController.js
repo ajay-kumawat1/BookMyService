@@ -129,8 +129,41 @@ const getById = async (req, res) => {
   }
 };
 
+const getAll = async (req, res) => {
+  try {
+    const services = await Service.find();
+    if (!services) {
+      return sendResponse(
+        res,
+        {},
+        "No services found",
+        RESPONSE_FAILURE,
+        RESPONSE_CODE.NOT_FOUND
+      );
+    }
+
+    return sendResponse(
+      res,
+      services,
+      "Services fetched successfully",
+      RESPONSE_SUCCESS,
+      RESPONSE_CODE.SUCCESS
+    );
+  } catch (error) {
+    console.error(`ServiceController.getAll() -> Error: ${error}`);
+    return sendResponse(
+      res,
+      {},
+      "Internal Server Error",
+      RESPONSE_FAILURE,
+      RESPONSE_CODE.INTERNAL_SERVER_ERROR
+    );
+  }
+};
+
 export default {
   create,
   getMy,
   getById,
+  getAll,
 };

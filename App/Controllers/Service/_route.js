@@ -7,5 +7,6 @@ const route = Router();
 route.post("/create", validJWTNeeded, serviceController.create);
 route.get("/getMy", validJWTNeeded, serviceController.getMy);
 route.get("/get/:id", validJWTNeeded, serviceController.getById);
+route.get("/getAll", validJWTNeeded, serviceController.getAll);
 
 export default route;
