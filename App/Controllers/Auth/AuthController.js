@@ -31,7 +31,7 @@ const register = async (req, res) => {
     }
 
     const otp = await generateOtp();
-    console.log(otp);
+
     res.cookie("otp", otp, {
       httpOnly: true,
       secure: true,
@@ -77,9 +77,7 @@ const register = async (req, res) => {
 const verifyOtpAndCreateUser = async (req, res) => {
   try {
     let otpVerify = req.cookies.otp;
-    console.log("otpVerify", otpVerify);
     if (otpVerify != req.body.otp) {
-      console.log("otp verification failed");
       return sendResponse(
         res,
         {},
@@ -107,8 +105,7 @@ const verifyOtpAndCreateUser = async (req, res) => {
 
     const user = await User.create({
       data,
-    });
-    console.log("iiii", user)
+    })
     res.clearCookie("user_data");
     return sendResponse(
       res,
