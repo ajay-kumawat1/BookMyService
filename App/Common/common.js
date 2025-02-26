@@ -19,6 +19,7 @@ export const Role = {
   SYSTEM_ADMIN: "SystemAdmin",
   ADMIN: "Admin",
   EMPLOYEE: "Employee",
+  USER: "User",
 };
 
 export async function generateOtp() {

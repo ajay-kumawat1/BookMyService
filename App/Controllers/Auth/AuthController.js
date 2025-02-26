@@ -102,11 +102,10 @@ const verifyOtpAndCreateUser = async (req, res) => {
       isVerified: true,
       role: "User",
     }
+    
+    const user = await User.create(data);
 
-    const user = await User.create({
-      data,
-    })
-    res.clearCookie("user_data");
+    res.clearCookie("user_data", "otp");
     return sendResponse(
       res,
       user,
@@ -115,7 +114,7 @@ const verifyOtpAndCreateUser = async (req, res) => {
       RESPONSE_CODE.CREATED
     );
   } catch (error) {
-    console.error("User Creation Error:", error);
+    console.error("User Creation Error:", error.message);
     return sendResponse(
       res,
       {},
