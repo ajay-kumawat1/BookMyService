@@ -31,7 +31,13 @@ const register = async (req, res) => {
     }
 
     const otp = await generateOtp();
-    storeOtpInCookie(res, otp);
+    console.log(otp);
+    res.cookie("otp", otp, {
+      httpOnly: true,
+      secure: true,
+      maxAge: 5 * 60 * 1000,
+    });
+
     await sendOtpMail(
       email,
       firstName,
@@ -70,8 +76,10 @@ const register = async (req, res) => {
 
 const verifyOtpAndCreateUser = async (req, res) => {
   try {
-    const otpVerify = verifyOTP(req.cookies.otp, req.body.otp, res);
-    if (!otpVerify) {
+    let otpVerify = req.cookies.otp;
+    console.log("otpVerify", otpVerify);
+    if (otpVerify != req.body.otp) {
+      console.log("otp verification failed");
       return sendResponse(
         res,
         {},
@@ -90,14 +98,17 @@ const verifyOtpAndCreateUser = async (req, res) => {
         RESPONSE_FAILURE,
         RESPONSE_CODE.BAD_REQUEST
       );
-
-    const user = await User.create({
+    let data = {
       ...userData,
       password: await hashPassword(userData.password),
       isVerified: true,
       role: "User",
-    });
+    }
 
+    const user = await User.create({
+      data,
+    });
+    console.log("iiii", user)
     res.clearCookie("user_data");
     return sendResponse(
       res,

@@ -5,6 +5,7 @@ import {
   RESPONSE_SUCCESS,
 } from "../../Common/constant.js";
 import { User } from "../../Models/UserModel.js";
+import { uploadImageCloudinary, deleteImageCloudinary } from "../../Services/CloudnaryService.js";
 
 const getMyProfile = async (req, res) => {
   try {
@@ -32,6 +33,7 @@ const getMyProfile = async (req, res) => {
 };
 
 const updateProfile = async (req, res) => {
+  
   try {
     let user = await User.findOne({ _id: req.params.id });
     if (!user) {
@@ -47,7 +49,6 @@ const updateProfile = async (req, res) => {
     user = await User.findByIdAndUpdate(
       req.params.id,
       { $set: req.body },
-      { new: true }
     );
     if (!user) {
       return sendResponse(

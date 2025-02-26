@@ -17,12 +17,6 @@ export const UserSchema = new Schema(
     phoneNumber: {
       type: String,
       unique: true,
-      validate: {
-        validator: function (v) {
-          return /\d{10}/.test(v); // Validates 10-digit phone numbers
-        },
-        message: (props) => `${props.value} is not a valid phone number!`,
-      },
     },
     avatar: {
       type: String,
