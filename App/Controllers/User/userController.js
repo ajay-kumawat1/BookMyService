@@ -33,7 +33,6 @@ const getMyProfile = async (req, res) => {
 };
 
 const updateProfile = async (req, res) => {
-  
   try {
     let user = await User.findOne({ _id: req.params.id });
     if (!user) {
@@ -49,6 +48,7 @@ const updateProfile = async (req, res) => {
     user = await User.findByIdAndUpdate(
       req.params.id,
       { $set: req.body },
+      { new: true }
     );
     if (!user) {
       return sendResponse(

@@ -1,6 +1,7 @@
 import {
   generateOtp,
   hashPassword,
+  Role,
   sendOtpMail,
   sendResponse,
   signToken,
@@ -31,12 +32,7 @@ const register = async (req, res) => {
     }
 
     const otp = await generateOtp();
-
-    res.cookie("otp", otp, {
-      httpOnly: true,
-      secure: true,
-      maxAge: 5 * 60 * 1000,
-    });
+    storeOtpInCookie(res, otp);
 
     await sendOtpMail(
       email,
@@ -76,8 +72,8 @@ const register = async (req, res) => {
 
 const verifyOtpAndCreateUser = async (req, res) => {
   try {
-    let otpVerify = req.cookies.otp;
-    if (otpVerify != req.body.otp) {
+    const otpVerify = verifyOTP(req.cookies.otp, req.body.otp, res);
+    if (!otpVerify) {
       return sendResponse(
         res,
         {},
@@ -96,11 +92,11 @@ const verifyOtpAndCreateUser = async (req, res) => {
         RESPONSE_FAILURE,
         RESPONSE_CODE.BAD_REQUEST
       );
-    let data = {
+    const data = {
       ...userData,
       password: await hashPassword(userData.password),
       isVerified: true,
-      role: "User",
+      role: Role.USER,
     }
     
     const user = await User.create(data);
