@@ -25,6 +25,7 @@ const serviceSchema = new Schema(
       enum: ["cash", "online", "card"],
       required: true,
     },
+    bookedBy: [{ type: Schema.Types.ObjectId, ref: "User" }],
   },
   { timestamps: true }
 );

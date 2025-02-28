@@ -6,6 +6,7 @@ import {
 } from "../../Common/constant.js";
 import { BusinessOwner } from "../../Models/BusinessOwnerModel.js";
 import { Service } from "../../Models/ServiceModel.js";
+import { User } from "../../Models/UserModel.js";
 
 const create = async (req, res) => {
   try {
@@ -161,9 +162,67 @@ const getAll = async (req, res) => {
   }
 };
 
+const bookService = async (req, res) => {
+  try {
+    const service = await Service.findOne({
+      _id: req.params.id,
+    });
+    if (!service) {
+      return sendResponse(
+        res,
+        {},
+        "Service not found",
+        RESPONSE_FAILURE,
+        RESPONSE_CODE.NOT_FOUND
+      );
+    }
+
+    const isBooked = await User.findOne({ bookedServiceIds: req.params.id });
+    if (isBooked) {
+      return sendResponse(
+        res,
+        {},
+        "Service already booked",
+        RESPONSE_FAILURE,
+        RESPONSE_CODE.BAD_REQUEST
+      );
+    }
+
+    await User.findOneAndUpdate(
+      { _id: req.user.id },
+      { $push: { bookedServiceIds: req.params.id } },
+      { new: true }
+    );
+
+    await Service.findOneAndUpdate(
+      { _id: req.params.id },
+      { $push: { bookedBy: req.user.id } },
+      { new: true }
+    );
+
+    return sendResponse(
+      res,
+      {},
+      "Service booked successfully",
+      RESPONSE_SUCCESS,
+      RESPONSE_CODE.SUCCESS
+    );
+  } catch (error) {
+    console.error(`ServiceController.bookService() -> Error: ${error}`);
+    return sendResponse(
+      res,
+      {},
+      "Internal Server Error",
+      RESPONSE_FAILURE,
+      RESPONSE_CODE.INTERNAL_SERVER_ERROR
+    );
+  }
+};
+
 export default {
   create,
   getMy,
   getById,
   getAll,
+  bookService,
 };

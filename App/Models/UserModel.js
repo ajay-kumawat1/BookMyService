@@ -30,6 +30,7 @@ export const UserSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    bookedServiceIds: [{ type: Schema.Types.ObjectId, ref: "Service" }],
   },
   {
     timestamps: true,
