@@ -4,6 +4,7 @@ import {
   RESPONSE_FAILURE,
   RESPONSE_SUCCESS,
 } from "../../Common/constant.js";
+import { sendMail, sendServiceBookedMail } from "../../Common/mail.js";
 import { BusinessOwner } from "../../Models/BusinessOwnerModel.js";
 import { Service } from "../../Models/ServiceModel.js";
 import { User } from "../../Models/UserModel.js";
@@ -199,6 +200,18 @@ const bookService = async (req, res) => {
       { $push: { bookedBy: req.user.id } },
       { new: true }
     );
+
+    // send mail to owner
+    const owner = await BusinessOwner.findOne({
+      servicesOffered: req.params.id,
+    });
+    if (owner) {
+      await sendServiceBookedMail(
+        owner.email,
+        owner.ownerFirstName,
+        "/email_template/service_book_email_template.html",
+      );
+    }
 
     return sendResponse(
       res,
