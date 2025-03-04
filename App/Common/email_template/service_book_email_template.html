@@ -1,210 +1,410 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html dir="ltr" lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>BookMyService</title>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
+    <meta name="x-apple-disable-message-reformatting" />
+    <title>BookMyService - Service Booked Mail</title>
+    <style>
+      @media (min-width: 640px) {
+        .sm_table-cell {
+          display: table-cell !important;
+        }
 
-    <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap"
-      rel="stylesheet"
-    />
+        .sm_w-1_5 {
+          width: 20% !important;
+        }
+
+        .sm_w-3_5 {
+          width: 60% !important;
+        }
+      }
+    </style>
   </head>
+  <div style="display:none;overflow:hidden;line-height:1px;opacity:0;max-height:0;max-width:0">
+    Verify your account
+  </div>
+
   <body
-    style="
-      margin: 0;
-      font-family: 'Poppins', sans-serif;
-      background: #ffffff;
-      font-size: 14px;
-    "
+    style="margin-left:auto;margin-right:auto;margin-top:auto;margin-bottom:auto;height:100vh;background-color:rgb(245,245,245);padding-left:1rem;padding-right:1rem;padding-bottom:2.5rem;padding-top:1rem;font-family:ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale"
   >
-    <div
-      style="
-        max-width: 680px;
-        margin: 0 auto;
-        padding: 45px 30px 60px;
-        background: #f4f7ff;
-        background-image: url(https://archisketch-resources.s3.ap-northeast-2.amazonaws.com/vrstyler/1661497957196_595865/email-template-background-banner);
-        background-repeat: no-repeat;
-        background-size: 800px 452px;
-        background-position: top center;
-        font-size: 14px;
-        color: #434343;
-      "
+    <table
+      align="center"
+      width="100%"
+      border="0"
+      cellpadding="0"
+      cellspacing="0"
+      role="presentation"
+      style="margin-left:auto;margin-right:auto;border-radius:1rem;background-color:rgb(255,255,255);padding:2rem;border-width:1px;border-style:solid;border-color:rgb(229,229,229);max-width:37.5em"
     >
-      <header>
-        <table style="width: 100%">
-          <tbody>
-            <tr style="height: 0">
-              <td>
-                <!-- <img
-                  alt=""
-                  src=""
-                  height="30px"
-                /> -->
-                <h3 style="color: #ffffff">BookMyService</h3>
-              </td>
-              <td style="text-align: right">
-                <!-- <span
-                  style="font-size: 16px; line-height: 30px; color: #ffffff;"
-                  >DATE..</span
-                > -->
-                <h3 style="color: #fff">{{DATE}}</h3>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </header>
-
-      <main>
-        <div
-          style="
-            margin: 0;
-            margin-top: 70px;
-            padding: 92px 30px 115px;
-            background: #ffffff;
-            border-radius: 30px;
-            text-align: center;
-          "
-        >
-          <div style="width: 100%; max-width: 489px; margin: 0 auto">
-            <p
-              style="
-                margin: 0;
-                margin-top: 17px;
-                font-size: 16px;
-                font-weight: 500;
-              "
+      <tbody>
+        <tr style="width:100%">
+          <td>
+            <table
+              align="center"
+              width="100%"
+              id="header"
+              class=""
+              border="0"
+              cellpadding="0"
+              cellspacing="0"
+              role="presentation"
             >
-              Hey {{NAME}},
-            </p>
-            <p
-              style="
-                margin: 0;
-                margin-top: 17px;
-                font-weight: 500;
-                letter-spacing: 0.56px;
-              "
+              <tbody>
+                <tr>
+                  <td>
+                    <a
+                      href=""
+                      style="margin-bottom:1rem;display:block;color:#067df7;text-decoration:none"
+                      target="_blank"
+                      ><img
+                        alt="BookMyService Logo"
+                        height="32"
+                        src="{{ logo_url | escape }}"
+                        style="margin-left:auto;margin-right:auto;display:block;outline:none;border:none;text-decoration:none"
+                        width="auto"
+                    /></a>
+                    <hr
+                      style="margin-top:1.25rem;margin-bottom:1.25rem;border-width:1px;border-color:rgb(212,212,212);width:100%;border:none;border-top:1px solid #eaeaea"
+                    />
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <table
+              align="center"
+              width="100%"
+              id="subject"
+              border="0"
+              cellpadding="0"
+              cellspacing="0"
+              role="presentation"
             >
-              Thank you for choosing
-              <span style="font-weight: 600; color: #1f1f1f"
-                >BookMyService</span
-              >
-              Company. Use the following OTP to complete the procedure to change
-              your email address. OTP is valid for
-              <span style="font-weight: 600; color: #1f1f1f">5 minutes</span>.
-              Do not share this code with others, including BookMyService
-              employees.
-            </p>
-            <p
-              style="
-                margin: 0;
-                margin-top: 60px;
-                font-size: 40px;
-                font-weight: 600;
-                letter-spacing: 25px;
-                color: #ba3d4f;
-              "
+              <tbody>
+                <tr>
+                  <td>
+                    <table
+                      align="center"
+                      width="100%"
+                      border="0"
+                      cellpadding="0"
+                      cellspacing="0"
+                      role="presentation"
+                      style="height:4rem;width:4rem;border-radius:0.75rem;background-color:rgb(245,245,245);max-width:37.5em"
+                    >
+                      <tbody>
+                        <tr style="width:100%">
+                          <td>
+                            <img
+                              alt="Icon"
+                              height="24"
+                              src="https://cdn.auth0.com/website/emails/product/icon-mail.png"
+                              style="margin-left:auto;margin-right:auto;display:block;outline:none;border:none;text-decoration:none"
+                              width="24"
+                            />
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <h1
+                      style="padding:0px;text-align:center;font-size:1.5rem;line-height:2rem;font-weight:600;color:rgb(23,23,23)"
+                    >
+                      Verify Your Account
+                    </h1>
+                    <hr
+                      style="margin-top:0.75rem;margin-bottom:1.5rem;border-width:1px;border-color:rgb(212,212,212);width:100%;border:none;border-top:1px solid #eaeaea"
+                    />
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <table
+              align="center"
+              width="100%"
+              id="body"
+              border="0"
+              cellpadding="0"
+              cellspacing="0"
+              role="presentation"
             >
-              {{OTP}}
-            </p>
-          </div>
-        </div>
-
-        <p
-          style="
-            max-width: 400px;
-            margin: 0 auto;
-            margin-top: 90px;
-            text-align: center;
-            font-weight: 500;
-            color: #8c8c8c;
-          "
-        >
-          Need help? Ask at
-          <a
-            href="mailto:archisketch@gmail.com"
-            style="color: #499fb6; text-decoration: none"
-            >bookMyService@gmail.com</a
-          >
-          or visit our
-          <a
-            href="bookMyService@gmail.com"
-            target="_blank"
-            style="color: #499fb6; text-decoration: none"
-            >Help Center</a
-          >
-        </p>
-      </main>
-
-      <!-- <footer
-        style="
-          width: 100%;
-          max-width: 490px;
-          margin: 20px auto 0;
-          text-align: center;
-          border-top: 1px solid #e6ebf1;
-        "
-      >
-        <p
-          style="
-            margin: 0;
-            margin-top: 40px;
-            font-size: 16px;
-            font-weight: 600;
-            color: #434343;
-          "
-        >
-          Archisketch Company
-        </p>
-        <p style="margin: 0; margin-top: 8px; color: #434343;">
-          Address 540, City, State.
-        </p>
-        <div style="margin: 0; margin-top: 16px;">
-          <a href="" target="_blank" style="display: inline-block;">
-            <img
-              width="36px"
-              alt="Facebook"
-              src="https://archisketch-resources.s3.ap-northeast-2.amazonaws.com/vrstyler/1661502815169_682499/email-template-icon-facebook"
-            />
-          </a>
-          <a
-            href=""
-            target="_blank"
-            style="display: inline-block; margin-left: 8px;"
-          >
-            <img
-              width="36px"
-              alt="Instagram"
-              src="https://archisketch-resources.s3.ap-northeast-2.amazonaws.com/vrstyler/1661504218208_684135/email-template-icon-instagram"
-          /></a>
-          <a
-            href=""
-            target="_blank"
-            style="display: inline-block; margin-left: 8px;"
-          >
-            <img
-              width="36px"
-              alt="Twitter"
-              src="https://archisketch-resources.s3.ap-northeast-2.amazonaws.com/vrstyler/1661503043040_372004/email-template-icon-twitter"
-            />
-          </a>
-          <a
-            href=""
-            target="_blank"
-            style="display: inline-block; margin-left: 8px;"
-          >
-            <img
-              width="36px"
-              alt="Youtube"
-              src="https://archisketch-resources.s3.ap-northeast-2.amazonaws.com/vrstyler/1661503195931_210869/email-template-icon-youtube"
-          /></a>
-        </div>
-        <p style="margin: 0; margin-top: 16px; color: #434343;">
-          Copyright © 2022 Company. All rights reserved.
-        </p>
-      </footer> -->
-    </div>
+              <tbody>
+                <tr>
+                  <td>
+                    <p
+                      style="margin-top:1.5rem;margin-bottom:1.5rem;text-align:center;font-size:1rem;line-height:1.5rem;color:rgb(23,23,23);margin:16px 0"
+                    >
+                      Your account information
+                    </p>
+                    <table
+                      align="center"
+                      width="100%"
+                      border="0"
+                      cellpadding="0"
+                      cellspacing="0"
+                      role="presentation"
+                      style="margin-bottom:1rem;border-radius:0.75rem;border-width:1px;border-style:dashed;border-color:rgb(229,229,229);background-color:rgb(250,250,250);padding-left:1.5rem;padding-right:1.5rem;padding-top:1rem;padding-bottom:1rem;max-width:37.5em"
+                    >
+                      <tbody>
+                        <tr style="width:100%">
+                          <td>
+                            <table
+                              align="center"
+                              width="100%"
+                              border="0"
+                              cellpadding="0"
+                              cellspacing="0"
+                              role="presentation"
+                              style="max-width:37.5em"
+                            >
+                              <tbody>
+                                <tr style="width:100%">
+                                  <td>
+                                    <table
+                                      align="center"
+                                      width="100%"
+                                      id="Account:"
+                                      border="0"
+                                      cellpadding="0"
+                                      cellspacing="0"
+                                      role="presentation"
+                                      style="height:2rem"
+                                    >
+                                      <tbody style="width:100%">
+                                        <tr style="width:100%">
+                                          <td
+                                            class="sm_w-1_5 sm_table-cell"
+                                            data-id="__react-email-column"
+                                            style="display:block;width:100%;text-align:left"
+                                          >
+                                            <p style="margin:0px;font-weight:600;font-size:14px;line-height:24px">
+                                              Account:
+                                            </p>
+                                          </td>
+                                          <td
+                                            class="sm_w-3_5 sm_table-cell"
+                                            data-id="__react-email-column"
+                                            style="display:block;width:100%;text-align:left"
+                                          >
+                                            <p
+                                              style="margin:0px;word-break:break-all;font-size:14px;line-height:24px"
+                                            >
+                                              {{NAME}}
+                                            </p>
+                                          </td>
+                                        </tr>
+                                      </tbody>
+                                    </table>
+                                    <hr
+                                      style="margin-top:0.5rem;margin-bottom:0.5rem;border-width:1px;border-color:rgb(229,229,229);width:100%;border:none;border-top:1px solid #eaeaea"
+                                    />
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </table>
+                            <table
+                              align="center"
+                              width="100%"
+                              border="0"
+                              cellpadding="0"
+                              cellspacing="0"
+                              role="presentation"
+                              style="max-width:37.5em"
+                            >
+                              <tbody>
+                                <tr style="width:100%">
+                                  <td>
+                                    <table
+                                      align="center"
+                                      width="100%"
+                                      id="Account:"
+                                      border="0"
+                                      cellpadding="0"
+                                      cellspacing="0"
+                                      role="presentation"
+                                      style="height:2rem"
+                                    >
+                                      <tbody style="width:100%">
+                                        <tr style="width:100%">
+                                          <td
+                                            class="sm_w-1_5 sm_table-cell"
+                                            data-id="__react-email-column"
+                                            style="display:block;width:100%;text-align:left"
+                                          >
+                                            <p style="margin:0px;font-weight:600;font-size:14px;line-height:24px">
+                                              Account:
+                                            </p>
+                                          </td>
+                                          <td
+                                            class="sm_w-3_5 sm_table-cell"
+                                            data-id="__react-email-column"
+                                            style="display:block;width:100%;text-align:left"
+                                          >
+                                            <p
+                                              style="margin:0px;word-break:break-all;font-size:14px;line-height:24px"
+                                            >
+                                              {{EMAIL}}
+                                            </p>
+                                          </td>
+                                        </tr>
+                                      </tbody>
+                                    </table>
+                                    <hr
+                                      style="margin-top:0.5rem;margin-bottom:0.5rem;border-width:1px;border-color:rgb(229,229,229);width:100%;border:none;border-top:1px solid #eaeaea"
+                                    />
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <table
+                      align="center"
+                      width="100%"
+                      border="0"
+                      cellpadding="0"
+                      cellspacing="0"
+                      role="presentation"
+                      style="width:100%;text-align:center;max-width:37.5em"
+                    >
+                      <tbody>
+                        <tr style="width:100%">
+                          <td>
+                            <a
+                              href=""
+                              style="margin-left:auto;margin-right:auto;box-sizing:border-box;width:fit-content;min-width:160px;border-radius:0.5rem;background-color:rgb(23,23,23);padding-left:0.75rem;padding-right:0.75rem;padding-top:0.5rem;padding-bottom:0.5rem;font-size:0.875rem;line-height:1.25rem;font-weight:600;color:rgb(255,255,255);text-decoration:none;display:inline-block;max-width:100%;mso-padding-alt:0px;padding:8px 12px 8px 12px"
+                              target="_blank"
+                              ><span
+                                ><!--[if mso
+                                  ]><i style="mso-font-width:300%;mso-text-raise:12" hidden>&#8202;&#8202;</i><!
+                                [endif]--></span
+                              ><span
+                                style="max-width:100%;display:inline-block;line-height:120%;mso-padding-alt:0px;mso-text-raise:6px"
+                                >{{OTP}}</span
+                              ><span
+                                ><!--[if mso
+                                  ]><i style="mso-font-width:300%" hidden>&#8202;&#8202;&#8203;</i><!
+                                [endif]--></span
+                              ></a
+                            >
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <table
+              align="center"
+              width="100%"
+              id="issue-note"
+              border="0"
+              cellpadding="0"
+              cellspacing="0"
+              role="presentation"
+              style="text-align:center;margin-top:1.5rem"
+            >
+              <tbody>
+                <tr>
+                  <td>
+                    <table
+                      align="center"
+                      width="100%"
+                      border="0"
+                      cellpadding="0"
+                      cellspacing="0"
+                      role="presentation"
+                      style="width:100%;text-align:center;max-width:37.5em"
+                    >
+                      <tbody>
+                        <tr style="width:100%">
+                          <td>
+                            <p
+                              style="margin:0px;margin-left:2rem;margin-right:2rem;font-size:0.875rem;line-height:1.25rem;color:rgb(163,163,163)"
+                            >
+                              If you are having any issues with your account, please don&#x27;t hesitate to contact us
+                              by replying to this mail.
+                            </p>
+                            <p
+                              style="margin:0px;margin-left:2rem;margin-right:2rem;font-size:0.875rem;line-height:1.25rem;color:rgb(163,163,163)"
+                            >
+                              Thanks!
+                            </p>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <table
+              align="center"
+              width="100%"
+              id="footer"
+              border="0"
+              cellpadding="0"
+              cellspacing="0"
+              role="presentation"
+              style="margin-top:1.5rem"
+            >
+              <tbody>
+                <tr>
+                  <td>
+                    <hr
+                      style="margin-top:0.75rem;margin-bottom:1.5rem;border-width:1px;border-color:rgb(212,212,212);width:100%;border:none;border-top:1px solid #eaeaea"
+                    />
+                    <p
+                      style="text-align:center;font-size:0.75rem;line-height:1rem;color:rgb(163,163,163);margin:16px 0"
+                    >
+                      You&#x27;re receiving this email because you have an account in BookMyService. If you are not sure why you’re receiving this,
+                      please contact us through our Support Center
+                    </p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <table
+      align="center"
+      width="100%"
+      border="0"
+      cellpadding="0"
+      cellspacing="0"
+      role="presentation"
+      style="margin-top:1rem;max-width:37.5em"
+    >
+      <tbody>
+        <tr style="width:100%">
+          <td>
+            <table
+              align="center"
+              width="100%"
+              border="0"
+              cellpadding="0"
+              cellspacing="0"
+              role="presentation"
+              style="width:fit-content;opacity:0.5"
+            >
+              <tbody style="width:100%">
+                <tr style="width:100%">
+                  <td align="right" data-id="__react-email-column" style="height:40px;width:fit-content">
+                    <p
+                      style="margin-top:-0.5rem;font-size:0.75rem;line-height:1rem;color:rgb(23,23,23);margin:16px 0"
+                    >
+                     ♥ Powered by BookMyService
+                    </p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </body>
 </html>
