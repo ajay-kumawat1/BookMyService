@@ -49,7 +49,9 @@ const validateRegister = async (req, res, next) => {
       return sendResponse(
         res,
         {},
-        `Registration failed: ${error.details.map((x) => x.message).join(", ")}`,
+        `Registration failed: ${error.details
+          .map((x) => x.message)
+          .join(", ")}`,
         RESPONSE_FAILURE,
         RESPONSE_CODE.BAD_REQUEST
       );
@@ -105,7 +107,6 @@ const validateLogin = async (req, res, next) => {
   next();
 };
 
-
 const validateResetPassword = async (req, res, next) => {
   if (isEmpty(req.params.token)) {
     return sendResponse(
@@ -145,7 +146,9 @@ const validateResetPassword = async (req, res, next) => {
     return sendResponse(
       res,
       {},
-      `Reset password failed: ${error.details.map((x) => x.message).join(", ")}`,
+      `Reset password failed: ${error.details
+        .map((x) => x.message)
+        .join(", ")}`,
       RESPONSE_FAILURE,
       RESPONSE_CODE.BAD_REQUEST
     );
@@ -182,7 +185,7 @@ const validJWTNeeded = async (req, res, next) => {
         {},
         "Invalid token: User ID missing.",
         RESPONSE_FAILURE,
-        RESPONSE_CODE.INVALID_TOKEN
+        RESPONSE_CODE.UNAUTHORISED
       );
     }
 
@@ -193,7 +196,7 @@ const validJWTNeeded = async (req, res, next) => {
         {},
         "Invalid token: User does not exist.",
         RESPONSE_FAILURE,
-        RESPONSE_CODE.INVALID_TOKEN
+        RESPONSE_CODE.UNAUTHORISED
       );
     }
 
@@ -206,8 +209,34 @@ const validJWTNeeded = async (req, res, next) => {
       {},
       "Invalid or expired token. Please log in again.",
       RESPONSE_FAILURE,
-      RESPONSE_CODE.UNAUTHORIZED
+      RESPONSE_CODE.UNAUTHORISED
     );
+  }
+};
+
+const isAdminAuthenticated = async (req, res, next) => {
+  const authToken = req.headers.authorization;
+  if (!authToken || !authToken.startsWith("Bearer ")) {
+    return sendResponse(
+      res,
+      {},
+      "Authentication required. Please log in.",
+      RESPONSE_FAILURE,
+      RESPONSE_CODE.UNAUTHORISED
+    );
+  }
+  const token = authToken.split(" ")[1];
+
+  try {
+    const decodeToken = jwt.verify(token, process.env.JWT_SECRET);
+    if (decodeToken.role === "Admin") {
+      req.user = decodeToken;
+      next();
+    } else {
+      return next(403, "Unathorized");
+    }
+  } catch (error) {
+    next(500, error.message);
   }
 };
 
@@ -216,4 +245,5 @@ export {
   validateLogin,
   validateResetPassword,
   validJWTNeeded,
+  isAdminAuthenticated,
 };
