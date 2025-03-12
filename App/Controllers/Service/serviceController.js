@@ -67,16 +67,15 @@ const create = async (req, res) => {
 const getMy = async (req, res) => {
   try {
     const services = await Service.find({ businessOwner: req.user.id });
-    if (!services) {
+    if (services.length === 0) {
       return sendResponse(
         res,
-        {},
+        [],
         "No services found",
         RESPONSE_FAILURE,
         RESPONSE_CODE.NOT_FOUND
       );
     }
-
     return sendResponse(
       res,
       services,
@@ -162,7 +161,43 @@ const getAll = async (req, res) => {
     );
   }
 };
+const update = async (req, res) => {
+  try {
+    const service = await Service.findOne({ _id: req.params.id, businessOwner: req.user.id });
+    if (!service) {
+      return sendResponse(
+        res,
+        {},
+        "Service not found or you are not authorized to edit it",
+        RESPONSE_FAILURE,
+        RESPONSE_CODE.NOT_FOUND
+      );
+    }
 
+    const updatedService = await Service.findByIdAndUpdate(
+      req.params.id,
+      { $set: req.body },
+      { new: true }
+    );
+
+    return sendResponse(
+      res,
+      updatedService,
+      "Service updated successfully",
+      RESPONSE_SUCCESS,
+      RESPONSE_CODE.SUCCESS
+    );
+  } catch (error) {
+    console.error(`ServiceController.update() -> Error: ${error}`);
+    return sendResponse(
+      res,
+      {},
+      "Internal Server Error",
+      RESPONSE_FAILURE,
+      RESPONSE_CODE.INTERNAL_SERVER_ERROR
+    );
+  }
+};
 const bookService = async (req, res) => {
   try {
     const service = await Service.findOne({
@@ -238,4 +273,5 @@ export default {
   getById,
   getAll,
   bookService,
+  update
 };

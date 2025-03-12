@@ -97,14 +97,26 @@ const verifyOtpAndCreateUser = async (req, res) => {
       password: await hashPassword(userData.password),
       isVerified: true,
       role: Role.USER,
-    }
-    
+    };
+
     const user = await User.create(data);
+
+    // Generate JWT token
+    const payload = {
+      user: {
+        id: user._id,
+        role: user.role,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+      },
+    };
+    const token = await signToken(payload);
 
     res.clearCookie("user_data", "otp");
     return sendResponse(
       res,
-      user,
+      { user, token }, // Include token in response
       "User registered successfully",
       RESPONSE_SUCCESS,
       RESPONSE_CODE.CREATED
@@ -439,7 +451,6 @@ const verifyOtpAndCreateBusinessOwner = async (req, res) => {
     const businessOwnerData = JSON.parse(
       req.cookies.business_owner_data || "{}"
     );
-
     if (!businessOwnerData.personalInfo.email)
       return sendResponse(
         res,
@@ -456,10 +467,22 @@ const verifyOtpAndCreateBusinessOwner = async (req, res) => {
       isVerified: true,
     });
 
+    // Generate JWT token
+    const payload = {
+      businessOwner: {
+        id: businessOwner._id,
+        role: businessOwner.role,
+        ownerFirstName: businessOwner.ownerFirstName,
+        ownerLastName: businessOwner.ownerLastName,
+        email: businessOwner.email,
+      },
+    };
+    const token = await signToken(payload);
+
     res.clearCookie("business_owner_data");
     return sendResponse(
       res,
-      businessOwner,
+      { businessOwner, token }, // Include token in response
       "Business owner registered successfully",
       RESPONSE_SUCCESS,
       RESPONSE_CODE.CREATED
@@ -523,6 +546,54 @@ const businessOwnerLogin = async (req, res) => {
   }
 };
 
+const getMe = async (req, res) => {
+  try {
+    // req.user is set by validJWTNeeded middleware
+    const userId = req.user.id;
+
+    // Check how userType is determined
+    let userType;
+    if (req.user.role == "User") {
+      userType = "User";
+    } else {
+      userType = "Owner";
+    }
+
+    const userModel = userType === "Owner" ? BusinessOwner : User;
+
+    // Fetch the user from the appropriate model
+    const user = await userModel.findById(userId);
+    if (!user) {
+      console.log(
+        `User not found in ${userType} collection with ID: ${userId}`
+      );
+      return sendResponse(
+        res,
+        {},
+        "User not found",
+        RESPONSE_FAILURE,
+        RESPONSE_CODE.NOT_FOUND
+      );
+    }
+
+    return sendResponse(
+      res,
+      user,
+      "User fetched successfully",
+      RESPONSE_SUCCESS,
+      RESPONSE_CODE.SUCCESS
+    );
+  } catch (error) {
+    console.error(`AuthController.getMe() -> Error: ${error}`);
+    return sendResponse(
+      res,
+      {},
+      "Internal Server Error",
+      RESPONSE_FAILURE,
+      RESPONSE_CODE.INTERNAL_SERVER_ERROR
+    );
+  }
+};
 export default {
   register,
   verifyOtpAndCreateUser,
@@ -531,7 +602,7 @@ export default {
   forgotPassword,
   forgotPasswordVerifyOtp,
   resetPassword,
-
+  getMe,
   // registerBusinessOwner,
   registerBusinessOwner,
   verifyOtpAndCreateBusinessOwner,

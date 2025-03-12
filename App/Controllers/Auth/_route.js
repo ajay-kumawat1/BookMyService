@@ -9,6 +9,9 @@ import {
 
 const router = Router();
 
+// Get the login user 
+router.get("/me", validJWTNeeded, AuthController.getMe);
+
 // **User Registration & OTP Verification**
 router.post("/register", validateRegister, AuthController.register);
 router.post("/verifyAndCreateUser", AuthController.verifyOtpAndCreateUser);
