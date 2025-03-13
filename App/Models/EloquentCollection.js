@@ -1,5 +1,5 @@
 import { model } from "mongoose";
-import { UserSchema } from "./User.js";
+import { UserSchema } from "./UserModel.js";
 export default () => {
   model("users", UserSchema);
 };

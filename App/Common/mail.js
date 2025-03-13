@@ -32,3 +32,24 @@ export const sendMail = async (email, firstName, otp, emailTemplatePath) => {
     console.error("Error sending email:", error);
   }
 };
+
+export const sendServiceBookedMail = async (email, firstName, emailTemplatePath) => {
+  try {
+    const emailTemplate = fs.readFileSync(emailTemplatePath, "utf-8");
+    const emailHtml = emailTemplate
+      .replace("{{NAME}}", firstName)
+      .replace("{{DATE}}", new Date().toDateString());
+
+    const info = await transporter.sendMail({
+      from: "bookmyservice786@gmail.com",
+      to: email,
+      subject: "Service Booked",
+      text: `Your service has been booked`,
+      html: emailHtml,
+    });
+
+    console.log("Message sent: %s", info.messageId);
+  } catch (error) {
+    console.error("Error sending email:", error);
+  }
+};

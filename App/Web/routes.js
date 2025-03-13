@@ -6,7 +6,7 @@ import helmet from "helmet";
 import router from "../Controllers/_router.js";
 
 export default (app) => {
-  app.use(cors({ origin: "http://localhost:3000", credentials: true }));
+  app.use(cors({ origin: "http://localhost:5173", credentials: true }));
   app.use(helmet());
   app.use(json());
   app.use(express.json());

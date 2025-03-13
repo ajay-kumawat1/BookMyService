@@ -3,18 +3,17 @@ import {
   RESPONSE_CODE,
   RESPONSE_FAILURE,
   RESPONSE_SUCCESS,
-} from "../../Common/constant.js";
-import { User } from "../../Models/UserModel.js";
-import { uploadImageCloudinary, deleteImageCloudinary } from "../../Services/CloudnaryService.js";
+} from "../../Common/constant.js"
+import { BusinessOwner } from "../../Models/BusinessOwnerModel.js";
 
 const getMyProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
-    if (!user) {
+    const businessOwner = await BusinessOwner.findById(req.params.id);
+    if (!businessOwner) {
       return sendResponse(
         res,
         {},
-        "User not found",
+        "Business owner not found",
         RESPONSE_FAILURE,
         RESPONSE_CODE.NOT_FOUND
       );
@@ -22,35 +21,42 @@ const getMyProfile = async (req, res) => {
 
     return sendResponse(
       res,
-      user,
-      "User fetched successfully",
+      businessOwner,
+      "Profile fetched successfully",
       RESPONSE_SUCCESS,
       RESPONSE_CODE.SUCCESS
     );
   } catch (error) {
-    console.error(`UserController.getMyProfile() -> Error: ${error}`);
+    console.error(`BusinessOwnerController.getMyProfile() -> Error: ${error}`);
+    return sendResponse(
+      res,
+      {},
+      "Internal Server Error",
+      RESPONSE_FAILURE,
+      RESPONSE_CODE.INTERNAL_SERVER_ERROR
+    );
   }
 };
 
 const updateProfile = async (req, res) => {
   try {
-    let user = await User.findOne({ _id: req.params.id });
-    if (!user) {
+    let businessOwner = await BusinessOwner.findOne({ _id: req.params.id });
+    if (!businessOwner) {
       return sendResponse(
         res,
         {},
-        "User not found",
+        "Business owner not found",
         RESPONSE_FAILURE,
         RESPONSE_CODE.NOT_FOUND
       );
     }
 
-    user = await User.findByIdAndUpdate(
+    businessOwner = await BusinessOwner.findByIdAndUpdate(
       req.params.id,
       { $set: req.body },
       { new: true }
     );
-    if (!user) {
+    if (!businessOwner) {
       return sendResponse(
         res,
         {},
@@ -62,13 +68,20 @@ const updateProfile = async (req, res) => {
 
     return sendResponse(
       res,
-      user,
+      businessOwner,
       "Profile updated successfully",
       RESPONSE_SUCCESS,
       RESPONSE_CODE.SUCCESS
     );
   } catch (error) {
-    console.error(`UserController.updateProfile() -> Error: ${error}`);
+    console.error(`BusinessOwnerController.updateProfile() -> Error: ${error}`);
+    return sendResponse(
+      res,
+      {},
+      "Internal Server Error",
+      RESPONSE_FAILURE,
+      RESPONSE_CODE.INTERNAL_SERVER_ERROR
+    );
   }
 };
 

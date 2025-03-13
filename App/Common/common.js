@@ -18,7 +18,7 @@ export async function sendResponse(res, data, message, success, code = 200) {
 export const Role = {
   SYSTEM_ADMIN: "SystemAdmin",
   ADMIN: "Admin",
-  EMPLOYEE: "Employee",
+  USER: "User",
 };
 
 export async function generateOtp() {

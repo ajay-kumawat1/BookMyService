@@ -1,6 +1,7 @@
 import {
   generateOtp,
   hashPassword,
+  Role,
   sendOtpMail,
   sendResponse,
   signToken,
@@ -12,10 +13,10 @@ import {
   RESPONSE_SUCCESS,
 } from "../../Common/constant.js";
 import { verifyOTP } from "../../Common/otpVerification.js";
-import { User } from "../../Models/User.js";
+import { BusinessOwner } from "../../Models/BusinessOwnerModel.js";
+import { User } from "../../Models/UserModel.js";
 import { compare } from "bcrypt";
 
-/** Registers a user by sending OTP */
 const register = async (req, res) => {
   try {
     const { firstName, lastName, email, password, phoneNumber } = req.body;
@@ -32,6 +33,7 @@ const register = async (req, res) => {
 
     const otp = await generateOtp();
     storeOtpInCookie(res, otp);
+
     await sendOtpMail(
       email,
       firstName,
@@ -68,10 +70,9 @@ const register = async (req, res) => {
   }
 };
 
-/** Verifies OTP and creates user */
 const verifyOtpAndCreateUser = async (req, res) => {
   try {
-    const otpVerify = verifyOTP(req.cookies.otp, req.body.otp);
+    const otpVerify = verifyOTP(req.cookies.otp, req.body.otp, res);
     if (!otpVerify) {
       return sendResponse(
         res,
@@ -91,24 +92,37 @@ const verifyOtpAndCreateUser = async (req, res) => {
         RESPONSE_FAILURE,
         RESPONSE_CODE.BAD_REQUEST
       );
-
-    const user = await User.create({
+    const data = {
       ...userData,
       password: await hashPassword(userData.password),
       isVerified: true,
-      role: "User",
-    });
+      role: Role.USER,
+    };
 
-    res.clearCookie("user_data");
+    const user = await User.create(data);
+
+    // Generate JWT token
+    const payload = {
+      user: {
+        id: user._id,
+        role: user.role,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+      },
+    };
+    const token = await signToken(payload);
+
+    res.clearCookie("user_data", "otp");
     return sendResponse(
       res,
-      user,
+      { user, token }, // Include token in response
       "User registered successfully",
       RESPONSE_SUCCESS,
       RESPONSE_CODE.CREATED
     );
   } catch (error) {
-    console.error("User Creation Error:", error);
+    console.error("User Creation Error:", error.message);
     return sendResponse(
       res,
       {},
@@ -119,7 +133,6 @@ const verifyOtpAndCreateUser = async (req, res) => {
   }
 };
 
-/** Resends OTP */
 const resendOtp = async (req, res) => {
   try {
     const { email } = req.body;
@@ -162,7 +175,6 @@ const resendOtp = async (req, res) => {
   }
 };
 
-/** Logs in a user */
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -210,7 +222,6 @@ const login = async (req, res) => {
   }
 };
 
-/** Handles forgot password by sending OTP */
 const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
@@ -235,7 +246,7 @@ const forgotPassword = async (req, res) => {
     await sendOtpMail(
       email,
       user.firstName,
-      "../../Common/email_template/signup_email_template.html",
+      "/email_template/signup_email_template.html",
       otp
     );
 
@@ -258,10 +269,9 @@ const forgotPassword = async (req, res) => {
   }
 };
 
-/** Verifies OTP */
 const forgotPasswordVerifyOtp = (req, res) => {
   try {
-    const otpVerify = verifyOTP(req.cookies.otp, req.body.otp);
+    const otpVerify = verifyOTP(req.cookies.otp, req.body.otp, res);
     if (!otpVerify) {
       return sendResponse(
         res,
@@ -291,7 +301,6 @@ const forgotPasswordVerifyOtp = (req, res) => {
   }
 };
 
-/** Resets the user's password */
 const resetPassword = async (req, res) => {
   try {
     const { password, confirmPassword } = req.body;
@@ -342,6 +351,249 @@ const resetPassword = async (req, res) => {
   }
 };
 
+const registerBusinessOwner = async (req, res) => {
+  try {
+    const {
+      ownerFirstName,
+      ownerLastName,
+      email,
+      password,
+      phoneNumber,
+      businessName,
+      businessCategory,
+      businessDescription,
+      businessAddress,
+      city,
+      state,
+      zipCode,
+      country,
+    } = req.body;
+
+    if (await BusinessOwner.findOne({ email })) {
+      return sendResponse(
+        res,
+        {},
+        "Email already exists",
+        RESPONSE_FAILURE,
+        RESPONSE_CODE.BAD_REQUEST
+      );
+    }
+
+    const otp = await generateOtp();
+    storeOtpInCookie(res, otp);
+    await sendOtpMail(
+      email,
+      ownerFirstName,
+      "/email_template/signup_email_template.html",
+      otp
+    );
+
+    res.cookie(
+      "business_owner_data",
+      JSON.stringify({
+        personalInfo: {
+          ownerFirstName: ownerFirstName,
+          ownerLastName: ownerLastName,
+          email: email,
+          password: password,
+          phoneNumber: phoneNumber,
+        },
+        businessInfo: {
+          businessName: businessName,
+          businessCategory: businessCategory,
+          businessDescription: businessDescription,
+          businessAddress: businessAddress,
+          city: city,
+          state: state,
+          zipCode: zipCode,
+          country: country,
+        },
+      }),
+      {
+        httpOnly: true,
+        secure: true,
+        maxAge: 5 * 60 * 1000,
+      }
+    );
+
+    return sendResponse(
+      res,
+      {},
+      "OTP sent successfully",
+      RESPONSE_SUCCESS,
+      RESPONSE_CODE.SUCCESS
+    );
+  } catch (error) {
+    console.error("Register Business Owner Error:", error);
+    return sendResponse(
+      res,
+      {},
+      "Failed to register business owner",
+      RESPONSE_FAILURE,
+      RESPONSE_CODE.INTERNAL_SERVER_ERROR
+    );
+  }
+};
+
+const verifyOtpAndCreateBusinessOwner = async (req, res) => {
+  try {
+    const otpVerify = verifyOTP(req.cookies.otp, req.body.otp, res);
+    if (!otpVerify) {
+      return sendResponse(
+        res,
+        {},
+        "OTP verification failed",
+        RESPONSE_FAILURE,
+        RESPONSE_CODE.UNAUTHORISED
+      );
+    }
+
+    const businessOwnerData = JSON.parse(
+      req.cookies.business_owner_data || "{}"
+    );
+    if (!businessOwnerData.personalInfo.email)
+      return sendResponse(
+        res,
+        {},
+        "Business owner data missing. Please register again.",
+        RESPONSE_FAILURE,
+        RESPONSE_CODE.BAD_REQUEST
+      );
+
+    const businessOwner = await BusinessOwner.create({
+      ...businessOwnerData.personalInfo,
+      ...businessOwnerData.businessInfo,
+      password: await hashPassword(businessOwnerData.personalInfo.password),
+      isVerified: true,
+    });
+
+    // Generate JWT token
+    const payload = {
+      businessOwner: {
+        id: businessOwner._id,
+        role: businessOwner.role,
+        ownerFirstName: businessOwner.ownerFirstName,
+        ownerLastName: businessOwner.ownerLastName,
+        email: businessOwner.email,
+      },
+    };
+    const token = await signToken(payload);
+
+    res.clearCookie("business_owner_data");
+    return sendResponse(
+      res,
+      { businessOwner, token }, // Include token in response
+      "Business owner registered successfully",
+      RESPONSE_SUCCESS,
+      RESPONSE_CODE.CREATED
+    );
+  } catch (error) {
+    console.error("Business Owner Creation Error:", error);
+    return sendResponse(
+      res,
+      {},
+      "Failed to create business owner",
+      RESPONSE_FAILURE,
+      RESPONSE_CODE.INTERNAL_SERVER_ERROR
+    );
+  }
+};
+
+const businessOwnerLogin = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const businessOwner = await BusinessOwner.findOne({ email });
+
+    if (!businessOwner || !(await compare(password, businessOwner.password))) {
+      return sendResponse(
+        res,
+        {},
+        "Invalid email or password",
+        RESPONSE_FAILURE,
+        RESPONSE_CODE.UNAUTHORISED
+      );
+    }
+
+    // Return the JWT using jsonwebtoken
+    const payload = {
+      businessOwner: {
+        id: businessOwner._id,
+        role: businessOwner.role,
+        ownerFirstName: businessOwner.ownerFirstName,
+        ownerLastName: businessOwner.ownerLastName,
+        email: businessOwner.email,
+      },
+    };
+
+    const token = await signToken(payload);
+
+    return sendResponse(
+      res,
+      { businessOwner, token },
+      "Business Owner logged in successfully",
+      RESPONSE_SUCCESS,
+      RESPONSE_CODE.SUCCESS
+    );
+  } catch (error) {
+    console.error("Business Owner Login Error:", error);
+    return sendResponse(
+      res,
+      {},
+      "Failed to login",
+      RESPONSE_FAILURE,
+      RESPONSE_CODE.INTERNAL_SERVER_ERROR
+    );
+  }
+};
+
+const getMe = async (req, res) => {
+  try {
+    // req.user is set by validJWTNeeded middleware
+    const userId = req.user.id;
+
+    // Check how userType is determined
+    let userType;
+    if (req.user.role == "User") {
+      userType = "User";
+    } else {
+      userType = "Owner";
+    }
+
+    const userModel = userType === "Owner" ? BusinessOwner : User;
+
+    // Fetch the user from the appropriate model
+    const user = await userModel.findById(userId);
+    if (!user) {
+      console.log(
+        `User not found in ${userType} collection with ID: ${userId}`
+      );
+      return sendResponse(
+        res,
+        {},
+        "User not found",
+        RESPONSE_FAILURE,
+        RESPONSE_CODE.NOT_FOUND
+      );
+    }
+
+    return sendResponse(
+      res,
+      user,
+      "User fetched successfully",
+      RESPONSE_SUCCESS,
+      RESPONSE_CODE.SUCCESS
+    );
+  } catch (error) {
+    console.error(`AuthController.getMe() -> Error: ${error}`);
+    return sendResponse(
+      res,
+      {},
+      "Internal Server Error",
+      RESPONSE_FAILURE,
+      RESPONSE_CODE.INTERNAL_SERVER_ERROR
+    );
+  }
+};
 export default {
   register,
   verifyOtpAndCreateUser,
@@ -350,4 +602,9 @@ export default {
   forgotPassword,
   forgotPasswordVerifyOtp,
   resetPassword,
+  getMe,
+  // registerBusinessOwner,
+  registerBusinessOwner,
+  verifyOtpAndCreateBusinessOwner,
+  businessOwnerLogin,
 };
