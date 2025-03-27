@@ -27,8 +27,9 @@ export async function generateOtp() {
 
 export async function storeOtpInCookie(res, otp) {
   res.cookie("otp", otp, {
-    maxAge: 900000,
-    httpOnly: true,
+    httpOnly: true, // Prevent client-side access
+    secure: true, // Required for HTTPS (true in production)
+    sameSite: "None", // Allows cross-origin requests
   });
 }
 
