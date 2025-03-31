@@ -248,11 +248,32 @@ const bookService = async (req, res) => {
   }
 };
 
+const completeService = async (req, res) => {
+  try {
+    const { serviceId, otp } = req.body;
+    const user = await User.findOne({ _id: req.user.id, "serviceOtp.otp": otp });
+
+    if (!user || new Date() > new Date(user.serviceOtp.expiresAt)) {
+      return sendResponse(res, {}, "Invalid or expired OTP", RESPONSE_FAILURE, RESPONSE_CODE.BAD_REQUEST);
+    }
+
+    // Mark service as completed and remove OTP
+    await Service.findOneAndUpdate({ _id: serviceId }, { $set: { status: "completed" } });
+    await User.findOneAndUpdate({ _id: req.user.id }, { $unset: { serviceOtp: "" } });
+
+    return sendResponse(res, {}, "Service completed successfully", RESPONSE_SUCCESS, RESPONSE_CODE.SUCCESS);
+  } catch (error) {
+    console.error(`ServiceController.completeService() -> Error: ${error}`);
+    return sendResponse(res, {}, "Internal Server Error", RESPONSE_FAILURE, RESPONSE_CODE.INTERNAL_SERVER_ERROR);
+  }
+};
+
 export default {
   create,
   getMy,
   getById,
   getAll,
   bookService,
+  completeService,
   update
 };

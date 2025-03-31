@@ -9,5 +9,6 @@ route.get("/getMy", validJWTNeeded, serviceController.getMy);
 route.get("/get/:id", validJWTNeeded, serviceController.getById);
 route.get("/getAll", serviceController.getAll);
 route.put("/bookService/:id", validJWTNeeded, serviceController.bookService);
+route.post("/completeService/:id", validJWTNeeded, serviceController.completeService);
 route.put("/update/:id", validJWTNeeded, serviceController.update);
 export default route;
