@@ -31,6 +31,10 @@ export const UserSchema = new Schema(
       default: false,
     },
     bookedServiceIds: [{ type: Schema.Types.ObjectId, ref: "Service" }],
+    serviceOtp: {
+      otp: { type: Number },
+      expiresAt: { type: Date },
+    },
   },
   {
     timestamps: true,

@@ -13,6 +13,7 @@ const serviceSchema = new Schema(
       required: true,
     },
     duration: { type: Number, required: false }, // Duration in minutes
+    serviceOtp: { type: Number },
     images: { type: [String], required: false }, // Array of image URLs
     businessOwner: { type: Schema.Types.ObjectId, ref: "BusinessOwner" },
     booking_type: {

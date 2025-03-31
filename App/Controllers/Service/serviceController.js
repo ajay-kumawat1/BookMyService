@@ -161,6 +161,7 @@ const getAll = async (req, res) => {
     );
   }
 };
+
 const update = async (req, res) => {
   try {
     const service = await Service.findOne({ _id: req.params.id, businessOwner: req.user.id });
@@ -198,35 +199,30 @@ const update = async (req, res) => {
     );
   }
 };
+
 const bookService = async (req, res) => {
   try {
-    const service = await Service.findOne({
-      _id: req.params.id,
-    });
+    const service = await Service.findOne({ _id: req.params.id });
     if (!service) {
-      return sendResponse(
-        res,
-        {},
-        "Service not found",
-        RESPONSE_FAILURE,
-        RESPONSE_CODE.NOT_FOUND
-      );
+      return sendResponse(res, {}, "Service not found", RESPONSE_FAILURE, RESPONSE_CODE.NOT_FOUND);
     }
 
     const isBooked = await User.findOne({ bookedServiceIds: req.params.id });
     if (isBooked) {
-      return sendResponse(
-        res,
-        {},
-        "Service already booked",
-        RESPONSE_FAILURE,
-        RESPONSE_CODE.BAD_REQUEST
-      );
+      return sendResponse(res, {}, "Service already booked", RESPONSE_FAILURE, RESPONSE_CODE.BAD_REQUEST);
     }
+
+    // Generate a 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000);
+    const otpExpiration = new Date();
+    otpExpiration.setHours(otpExpiration.getHours() + 24); // OTP valid for 24 hours
 
     await User.findOneAndUpdate(
       { _id: req.user.id },
-      { $push: { bookedServiceIds: req.params.id } },
+      {
+        $push: { bookedServiceIds: req.params.id },
+        $set: { serviceOtp: { otp, expiresAt: otpExpiration } },
+      },
       { new: true }
     );
 
@@ -236,34 +232,19 @@ const bookService = async (req, res) => {
       { new: true }
     );
 
-    // send mail to owner
-    const owner = await BusinessOwner.findOne({
-      servicesOffered: req.params.id,
-    });
+    // Send OTP to user
+    await sendMail(service, req.user.firstName, otp);
+
+    // Send mail to service owner
+    const owner = await BusinessOwner.findOne({ servicesOffered: req.params.id });
     if (owner) {
-      await sendServiceBookedMail(
-        owner.email,
-        owner.ownerFirstName,
-        "/email_template/service_book_email_template.html",
-      );
+      await sendServiceBookedMail(owner.email, owner.ownerFirstName, "/email_template/service_book_email_template.html");
     }
 
-    return sendResponse(
-      res,
-      {},
-      "Service booked successfully",
-      RESPONSE_SUCCESS,
-      RESPONSE_CODE.SUCCESS
-    );
+    return sendResponse(res, {}, "Service booked successfully. OTP has been sent.", RESPONSE_SUCCESS, RESPONSE_CODE.SUCCESS);
   } catch (error) {
     console.error(`ServiceController.bookService() -> Error: ${error}`);
-    return sendResponse(
-      res,
-      {},
-      "Internal Server Error",
-      RESPONSE_FAILURE,
-      RESPONSE_CODE.INTERNAL_SERVER_ERROR
-    );
+    return sendResponse(res, {}, "Internal Server Error", RESPONSE_FAILURE, RESPONSE_CODE.INTERNAL_SERVER_ERROR);
   }
 };
 
