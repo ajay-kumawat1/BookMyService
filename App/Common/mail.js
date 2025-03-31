@@ -11,19 +11,21 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-export const sendMail = async (email, firstName, otp, emailTemplatePath) => {
+export const sendMail = async (service, firstName, otp, emailTemplatePath) => {
   try {
     const emailTemplate = fs.readFileSync(emailTemplatePath, "utf-8");
     const emailHtml = emailTemplate
       .replace("{{OTP}}", otp)
       .replace("{{NAME}}", firstName)
+      .replace("{{SERVICE_NAME}}", service.name)
+      .replace("{{SERVICE_DESCRIPTION}}", service.description)
+      .replace("{{SERVICE_CHARGE}}", service.serviceCharge)
       .replace("{{DATE}}", new Date().toDateString());
 
     const info = await transporter.sendMail({
       from: "bookmyservice786@gmail.com",
       to: email,
-      subject: "Your OTP Code",
-      text: `Your OTP code is ${otp}`,
+      subject: "Service Confirmation & OTP Details",
       html: emailHtml,
     });
 
