@@ -268,6 +268,32 @@ const completeService = async (req, res) => {
   }
 };
 
+const cancelService = async (req, res) => {
+  try {
+    const service = await Service.findOne({ _id: req.params.id });
+    if (!service) {
+      return sendResponse(res, {}, "Service not found", RESPONSE_FAILURE, RESPONSE_CODE.NOT_FOUND);
+    }
+
+    await User.findOneAndUpdate(
+      { _id: req.user.id },
+      { $pull: { bookedServiceIds: req.params.id } },
+      { new: true }
+    );
+
+    await Service.findOneAndUpdate(
+      { _id: req.params.id },
+      { $pull: { bookedBy: req.user.id } },
+      { new: true }
+    );
+
+    return sendResponse(res, {}, "Service cancelled successfully", RESPONSE_SUCCESS, RESPONSE_CODE.SUCCESS);
+  } catch (error) {
+    console.error(`ServiceController.cancelService() -> Error: ${error}`);
+    return sendResponse(res, {}, "Internal Server Error", RESPONSE_FAILURE, RESPONSE_CODE.INTERNAL_SERVER_ERROR);
+  }
+};
+
 export default {
   create,
   getMy,
@@ -275,5 +301,6 @@ export default {
   getAll,
   bookService,
   completeService,
+  cancelService,
   update
 };
