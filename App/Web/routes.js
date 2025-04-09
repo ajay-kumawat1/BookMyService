@@ -6,7 +6,13 @@ import helmet from "helmet";
 import router from "../Controllers/_router.js";
 
 export default (app) => {
-  app.use(cors({ origin: "http://localhost:5173", credentials: true }));
+  app.use(cors({ 
+    origin: [
+      "http://localhost:5173", 
+      "https://book-my-service-client.vercel.app"
+    ], 
+    credentials: true 
+  }));
   app.use(helmet());
   app.use(json());
   app.use(express.json());
@@ -15,7 +21,6 @@ export default (app) => {
   const __dirname = path.resolve();
   const publicDirectoryPath = path.join(__dirname, "public");
   app.use("/api/public", express.static(publicDirectoryPath));
-
 
   app.get("/", (_req, res) => {
     res.send({ message: "Welcome to the API" });
