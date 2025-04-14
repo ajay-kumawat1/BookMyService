@@ -202,9 +202,15 @@ const update = async (req, res) => {
 
 const bookService = async (req, res) => {
   try {
+    const { id } = req.user;
     const service = await Service.findOne({ _id: req.params.id });
     if (!service) {
       return sendResponse(res, {}, "Service not found", RESPONSE_FAILURE, RESPONSE_CODE.NOT_FOUND);
+    }
+
+    const userData = await User.findOne({ _id: id });
+    if (!userData) {
+      return sendResponse(res, {}, "User not found", RESPONSE_FAILURE, RESPONSE_CODE.NOT_FOUND);
     }
 
     const isBooked = await User.findOne({ bookedServiceIds: req.params.id });
@@ -212,33 +218,10 @@ const bookService = async (req, res) => {
       return sendResponse(res, {}, "Service already booked", RESPONSE_FAILURE, RESPONSE_CODE.BAD_REQUEST);
     }
 
-    // Generate a 6-digit OTP
-    const otp = Math.floor(100000 + Math.random() * 900000);
-    const otpExpiration = new Date();
-    otpExpiration.setHours(otpExpiration.getHours() + 24); // OTP valid for 24 hours
-
-    await User.findOneAndUpdate(
-      { _id: req.user.id },
-      {
-        $push: { bookedServiceIds: req.params.id },
-        $set: { serviceOtp: { otp, expiresAt: otpExpiration } },
-      },
-      { new: true }
-    );
-
-    await Service.findOneAndUpdate(
-      { _id: req.params.id },
-      { $push: { bookedBy: req.user.id } },
-      { new: true }
-    );
-
-    // Send OTP to user
-    await sendMail(service, req.user.firstName, otp);
-
     // Send mail to service owner
     const owner = await BusinessOwner.findOne({ servicesOffered: req.params.id });
     if (owner) {
-      await sendServiceBookedMail(owner.email, owner.ownerFirstName, "/email_template/service_book_email_template.html");
+      await sendServiceBookedMail(owner, service, userData, "/email_template/service_book_email_template.html");
     }
 
     return sendResponse(res, {}, "Service booked successfully. OTP has been sent.", RESPONSE_SUCCESS, RESPONSE_CODE.SUCCESS);
@@ -248,22 +231,31 @@ const bookService = async (req, res) => {
   }
 };
 
-const completeService = async (req, res) => {
+const acceptService = async (req, res) => {
   try {
-    const { serviceId, otp } = req.body;
-    const user = await User.findOne({ _id: req.user.id, "serviceOtp.otp": otp });
-
-    if (!user || new Date() > new Date(user.serviceOtp.expiresAt)) {
-      return sendResponse(res, {}, "Invalid or expired OTP", RESPONSE_FAILURE, RESPONSE_CODE.BAD_REQUEST);
+    const service = await Service.findOne({ _id: req.params.id });
+    if (!service) {
+      return sendResponse(res, {}, "Service not found", RESPONSE_FAILURE, RESPONSE_CODE.NOT_FOUND);
     }
 
-    // Mark service as completed and remove OTP
-    await Service.findOneAndUpdate({ _id: serviceId }, { $set: { status: "completed" } });
-    await User.findOneAndUpdate({ _id: req.user.id }, { $unset: { serviceOtp: "" } });
+    await Service.findOneAndUpdate(
+      { _id: req.params.id },
+      { 
+      $set: { status: "accepted" },
+      $push: { bookedBy: req.user.id }
+      },
+      { new: true }
+    );
 
-    return sendResponse(res, {}, "Service completed successfully", RESPONSE_SUCCESS, RESPONSE_CODE.SUCCESS);
+    await User.findOneAndUpdate(
+      { _id: req.user.id },
+      { $push: { bookedServiceIds: req.params.id } },
+      { new: true }
+    );
+
+    return sendResponse(res, {}, "Service accepted successfully", RESPONSE_SUCCESS, RESPONSE_CODE.SUCCESS);
   } catch (error) {
-    console.error(`ServiceController.completeService() -> Error: ${error}`);
+    console.error(`ServiceController.acceptService() -> Error: ${error}`);
     return sendResponse(res, {}, "Internal Server Error", RESPONSE_FAILURE, RESPONSE_CODE.INTERNAL_SERVER_ERROR);
   }
 };
@@ -294,6 +286,26 @@ const cancelService = async (req, res) => {
   }
 };
 
+const completeService = async (req, res) => {
+  try {
+    const { serviceId, otp } = req.body;
+    const user = await User.findOne({ _id: req.user.id, "serviceOtp.otp": otp });
+
+    if (!user || new Date() > new Date(user.serviceOtp.expiresAt)) {
+      return sendResponse(res, {}, "Invalid or expired OTP", RESPONSE_FAILURE, RESPONSE_CODE.BAD_REQUEST);
+    }
+
+    // Mark service as completed and remove OTP
+    await Service.findOneAndUpdate({ _id: serviceId }, { $set: { status: "completed" } });
+    await User.findOneAndUpdate({ _id: req.user.id }, { $unset: { serviceOtp: "" } });
+
+    return sendResponse(res, {}, "Service completed successfully", RESPONSE_SUCCESS, RESPONSE_CODE.SUCCESS);
+  } catch (error) {
+    console.error(`ServiceController.completeService() -> Error: ${error}`);
+    return sendResponse(res, {}, "Internal Server Error", RESPONSE_FAILURE, RESPONSE_CODE.INTERNAL_SERVER_ERROR);
+  }
+};
+
 export default {
   create,
   getMy,
@@ -302,5 +314,6 @@ export default {
   bookService,
   completeService,
   cancelService,
+  acceptService,
   update
 };

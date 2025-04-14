@@ -35,12 +35,19 @@ export const sendMail = async (service, firstName, otp, emailTemplatePath) => {
   }
 };
 
-export const sendServiceBookedMail = async (email, firstName, emailTemplatePath) => {
+export const sendServiceBookedMail = async (owner, service, user, emailTemplatePath) => {
   try {
     const emailTemplate = fs.readFileSync(emailTemplatePath, "utf-8");
     const emailHtml = emailTemplate
-      .replace("{{NAME}}", firstName)
-      .replace("{{DATE}}", new Date().toDateString());
+      .replace("{{NAME}}", owner.firstName)
+      .replace("{{SERVICE_NAME}}", service.name)
+      .replace("{{SERVICE_DESCRIPTION}}", service.description)
+      .replace("{{SERVICE_CHARGE}}", service.serviceCharge)
+      .replace("{{DATE}}", service.createdAt.toDateString())
+      .replace("{{USER_NAME}}", user.firstName)
+      .replace("{{USER_EMAIL}}", user.email)
+      .replace("{{USER_PHONE}}", user.phone)
+      .replace("{{ACCEPT_URL}}", `${process.env.BASE_URL}/accept/${service._id}`)
 
     const info = await transporter.sendMail({
       from: "bookmyservice786@gmail.com",
