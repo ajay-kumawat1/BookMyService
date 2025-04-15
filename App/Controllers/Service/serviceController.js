@@ -4,7 +4,7 @@ import {
   RESPONSE_FAILURE,
   RESPONSE_SUCCESS,
 } from "../../Common/constant.js";
-import { sendMail, sendServiceBookedMail } from "../../Common/mail.js";
+import { sendMail, sendServiceAcceptMail, sendServiceBookedMail } from "../../Common/mail.js";
 import { BusinessOwner } from "../../Models/BusinessOwnerModel.js";
 import { Service } from "../../Models/ServiceModel.js";
 import { User } from "../../Models/UserModel.js";
@@ -238,7 +238,7 @@ const acceptService = async (req, res) => {
       return sendResponse(res, {}, "Service not found", RESPONSE_FAILURE, RESPONSE_CODE.NOT_FOUND);
     }
 
-    await Service.findOneAndUpdate(
+    const serviecData = await Service.findOneAndUpdate(
       { _id: req.params.id },
       { 
       $set: { status: "accepted" },
@@ -247,11 +247,16 @@ const acceptService = async (req, res) => {
       { new: true }
     );
 
-    await User.findOneAndUpdate(
+    const serviceOwner = await BusinessOwner.findOne({ servicesOffered: req.params.id });
+
+    const userData = await User.findOneAndUpdate(
       { _id: req.user.id },
       { $push: { bookedServiceIds: req.params.id } },
       { new: true }
     );
+
+    // send mail to user
+    await sendServiceAcceptMail(serviceOwner, serviecData, userData, "/email_template/service_accept_email_template.html");
 
     return sendResponse(res, {}, "Service accepted successfully", RESPONSE_SUCCESS, RESPONSE_CODE.SUCCESS);
   } catch (error) {
