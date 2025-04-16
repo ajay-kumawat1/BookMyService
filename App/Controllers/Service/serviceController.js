@@ -4,7 +4,7 @@ import {
   RESPONSE_FAILURE,
   RESPONSE_SUCCESS,
 } from "../../Common/constant.js";
-import { sendMail, sendServiceAcceptMail, sendServiceBookedMail } from "../../Common/mail.js";
+import { sendCancelServiceMail, sendMail, sendServiceAcceptMail, sendServiceBookedMail } from "../../Common/mail.js";
 import { BusinessOwner } from "../../Models/BusinessOwnerModel.js";
 import { Service } from "../../Models/ServiceModel.js";
 import { User } from "../../Models/UserModel.js";
@@ -272,17 +272,20 @@ const cancelService = async (req, res) => {
       return sendResponse(res, {}, "Service not found", RESPONSE_FAILURE, RESPONSE_CODE.NOT_FOUND);
     }
 
-    await User.findOneAndUpdate(
+    const user = await User.findOneAndUpdate(
       { _id: req.user.id },
       { $pull: { bookedServiceIds: req.params.id } },
       { new: true }
     );
 
-    await Service.findOneAndUpdate(
+    const services = await Service.findOneAndUpdate(
       { _id: req.params.id },
       { $pull: { bookedBy: req.user.id } },
       { new: true }
     );
+    
+    // send cancel service mail to user
+    await sendCancelServiceMail(services, user, "/email_template/cancel_service_email_template.html")
 
     return sendResponse(res, {}, "Service cancelled successfully", RESPONSE_SUCCESS, RESPONSE_CODE.SUCCESS);
   } catch (error) {

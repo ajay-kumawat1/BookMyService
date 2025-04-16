@@ -89,3 +89,27 @@ export const sendServiceAcceptMail = async (owner, service, user, emailTemplateP
     console.error("Error sending email:", error);
   }
 };
+
+export const sendCancelServiceMail = async (service, user, emailTemplatePath) => {
+  try {
+    const emailTemplate = fs.readFileSync(emailTemplatePath, "utf-8");
+    const emailHtml = emailTemplate
+      .replace("{{NAME}}", user.firstName)
+      .replace("{{SERVICE_NAME}}", service.name)
+      .replace("{{SERVICE_DESCRIPTION}}", service.description)
+      .replace("{{SERVICE_CHARGE}}", service.serviceCharge)
+      .replace("{{DATE}}", service.createdAt.toDateString())
+
+    const info = await transporter.sendMail({
+      from: "bookmyservice786@gmail.com",
+      to: user.email,
+      subject: "Service Booked",
+      text: `Your service has been booked`,
+      html: emailHtml,
+    });
+
+    console.log("Message sent: %s", info.messageId);
+  } catch (error) {
+    console.error("Error sending email:", error);
+  }
+};
