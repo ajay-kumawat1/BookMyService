@@ -4,7 +4,12 @@ import {
   RESPONSE_FAILURE,
   RESPONSE_SUCCESS,
 } from "../../Common/constant.js";
-import { sendCancelServiceMail, sendMail, sendServiceAcceptMail, sendServiceBookedMail } from "../../Common/mail.js";
+import { ServiceStatusEnum } from "../../Common/enum.js";
+import {
+  sendCancelServiceMail,
+  sendServiceAcceptMail,
+  sendServiceBookedMail,
+} from "../../Common/mail.js";
 import { BusinessOwner } from "../../Models/BusinessOwnerModel.js";
 import { Service } from "../../Models/ServiceModel.js";
 import { User } from "../../Models/UserModel.js";
@@ -164,7 +169,10 @@ const getAll = async (req, res) => {
 
 const update = async (req, res) => {
   try {
-    const service = await Service.findOne({ _id: req.params.id, businessOwner: req.user.id });
+    const service = await Service.findOne({
+      _id: req.params.id,
+      businessOwner: req.user.id,
+    });
     if (!service) {
       return sendResponse(
         res,
@@ -205,29 +213,66 @@ const bookService = async (req, res) => {
     const { id } = req.user;
     const service = await Service.findOne({ _id: req.params.id });
     if (!service) {
-      return sendResponse(res, {}, "Service not found", RESPONSE_FAILURE, RESPONSE_CODE.NOT_FOUND);
+      return sendResponse(
+        res,
+        {},
+        "Service not found",
+        RESPONSE_FAILURE,
+        RESPONSE_CODE.NOT_FOUND
+      );
     }
 
     const userData = await User.findOne({ _id: id });
     if (!userData) {
-      return sendResponse(res, {}, "User not found", RESPONSE_FAILURE, RESPONSE_CODE.NOT_FOUND);
+      return sendResponse(
+        res,
+        {},
+        "User not found",
+        RESPONSE_FAILURE,
+        RESPONSE_CODE.NOT_FOUND
+      );
     }
 
     const isBooked = await User.findOne({ bookedServiceIds: req.params.id });
     if (isBooked) {
-      return sendResponse(res, {}, "Service already booked", RESPONSE_FAILURE, RESPONSE_CODE.BAD_REQUEST);
+      return sendResponse(
+        res,
+        {},
+        "Service already booked",
+        RESPONSE_FAILURE,
+        RESPONSE_CODE.BAD_REQUEST
+      );
     }
 
     // Send mail to service owner
-    const owner = await BusinessOwner.findOne({ servicesOffered: req.params.id });
+    const owner = await BusinessOwner.findOne({
+      servicesOffered: req.params.id,
+    });
     if (owner) {
-      await sendServiceBookedMail(owner, service, userData, "/email_template/service_book_email_template.html");
+      await sendServiceBookedMail(
+        owner,
+        service,
+        userData,
+        "/email_template/service_book_email_template.html"
+      );
     }
 
-    return sendResponse(res, {}, "Service booked successfully. OTP has been sent.", RESPONSE_SUCCESS, RESPONSE_CODE.SUCCESS);
+    return sendResponse(
+      res,
+      {},
+      "Service booked successfully. OTP has been sent.",
+      RESPONSE_SUCCESS,
+      RESPONSE_CODE.SUCCESS
+    );
   } catch (error) {
     console.error(`ServiceController.bookService() -> Error: ${error}`);
-    return sendResponse(res, {}, "Internal Server Error", RESPONSE_FAILURE, RESPONSE_CODE.INTERNAL_SERVER_ERROR);
+    return sendResponse(
+      res,
+      {},
+      "Internal Server Error",
+      RESPONSE_FAILURE,
+      RESPONSE_CODE.INTERNAL_SERVER_ERROR
+    );
   }
 };
 
@@ -235,19 +280,27 @@ const acceptService = async (req, res) => {
   try {
     const service = await Service.findOne({ _id: req.params.id });
     if (!service) {
-      return sendResponse(res, {}, "Service not found", RESPONSE_FAILURE, RESPONSE_CODE.NOT_FOUND);
+      return sendResponse(
+        res,
+        {},
+        "Service not found",
+        RESPONSE_FAILURE,
+        RESPONSE_CODE.NOT_FOUND
+      );
     }
 
     const serviecData = await Service.findOneAndUpdate(
       { _id: req.params.id },
-      { 
-      $set: { status: "accepted" },
-      $push: { bookedBy: req.user.id }
+      {
+        $set: { status: ServiceStatusEnum.ACCEPTED },
+        $push: { bookedBy: req.user.id },
       },
       { new: true }
     );
 
-    const serviceOwner = await BusinessOwner.findOne({ servicesOffered: req.params.id });
+    const serviceOwner = await BusinessOwner.findOne({
+      servicesOffered: req.params.id,
+    });
 
     const userData = await User.findOneAndUpdate(
       { _id: req.user.id },
@@ -256,12 +309,29 @@ const acceptService = async (req, res) => {
     );
 
     // send mail to user
-    await sendServiceAcceptMail(serviceOwner, serviecData, userData, "/email_template/service_accept_email_template.html");
+    await sendServiceAcceptMail(
+      serviceOwner,
+      serviecData,
+      userData,
+      "/email_template/service_accept_email_template.html"
+    );
 
-    return sendResponse(res, {}, "Service accepted successfully", RESPONSE_SUCCESS, RESPONSE_CODE.SUCCESS);
+    return sendResponse(
+      res,
+      {},
+      "Service accepted successfully",
+      RESPONSE_SUCCESS,
+      RESPONSE_CODE.SUCCESS
+    );
   } catch (error) {
     console.error(`ServiceController.acceptService() -> Error: ${error}`);
-    return sendResponse(res, {}, "Internal Server Error", RESPONSE_FAILURE, RESPONSE_CODE.INTERNAL_SERVER_ERROR);
+    return sendResponse(
+      res,
+      {},
+      "Internal Server Error",
+      RESPONSE_FAILURE,
+      RESPONSE_CODE.INTERNAL_SERVER_ERROR
+    );
   }
 };
 
@@ -269,7 +339,13 @@ const cancelService = async (req, res) => {
   try {
     const service = await Service.findOne({ _id: req.params.id });
     if (!service) {
-      return sendResponse(res, {}, "Service not found", RESPONSE_FAILURE, RESPONSE_CODE.NOT_FOUND);
+      return sendResponse(
+        res,
+        {},
+        "Service not found",
+        RESPONSE_FAILURE,
+        RESPONSE_CODE.NOT_FOUND
+      );
     }
 
     const user = await User.findOneAndUpdate(
@@ -280,37 +356,83 @@ const cancelService = async (req, res) => {
 
     const services = await Service.findOneAndUpdate(
       { _id: req.params.id },
-      { $pull: { bookedBy: req.user.id } },
+      {
+        $pull: { bookedBy: req.user.id },
+        $set: { status: ServiceStatusEnum.CANCELLED },
+      },
       { new: true }
     );
-    
-    // send cancel service mail to user
-    await sendCancelServiceMail(services, user, "/email_template/cancel_service_email_template.html")
 
-    return sendResponse(res, {}, "Service cancelled successfully", RESPONSE_SUCCESS, RESPONSE_CODE.SUCCESS);
+    // send cancel service mail to user
+    await sendCancelServiceMail(
+      services,
+      user,
+      "/email_template/cancel_service_email_template.html"
+    );
+
+    return sendResponse(
+      res,
+      {},
+      "Service cancelled successfully",
+      RESPONSE_SUCCESS,
+      RESPONSE_CODE.SUCCESS
+    );
   } catch (error) {
     console.error(`ServiceController.cancelService() -> Error: ${error}`);
-    return sendResponse(res, {}, "Internal Server Error", RESPONSE_FAILURE, RESPONSE_CODE.INTERNAL_SERVER_ERROR);
+    return sendResponse(
+      res,
+      {},
+      "Internal Server Error",
+      RESPONSE_FAILURE,
+      RESPONSE_CODE.INTERNAL_SERVER_ERROR
+    );
   }
 };
 
 const completeService = async (req, res) => {
   try {
     const { serviceId, otp } = req.body;
-    const user = await User.findOne({ _id: req.user.id, "serviceOtp.otp": otp });
+    const user = await User.findOne({
+      _id: req.user.id,
+      "serviceOtp.otp": otp,
+    });
 
     if (!user || new Date() > new Date(user.serviceOtp.expiresAt)) {
-      return sendResponse(res, {}, "Invalid or expired OTP", RESPONSE_FAILURE, RESPONSE_CODE.BAD_REQUEST);
+      return sendResponse(
+        res,
+        {},
+        "Invalid or expired OTP",
+        RESPONSE_FAILURE,
+        RESPONSE_CODE.BAD_REQUEST
+      );
     }
 
     // Mark service as completed and remove OTP
-    await Service.findOneAndUpdate({ _id: serviceId }, { $set: { status: "completed" } });
-    await User.findOneAndUpdate({ _id: req.user.id }, { $unset: { serviceOtp: "" } });
+    await Service.findOneAndUpdate(
+      { _id: serviceId },
+      { $set: { status: ServiceStatusEnum.COMPLETED } }
+    );
+    await User.findOneAndUpdate(
+      { _id: req.user.id },
+      { $unset: { serviceOtp: "" } }
+    );
 
-    return sendResponse(res, {}, "Service completed successfully", RESPONSE_SUCCESS, RESPONSE_CODE.SUCCESS);
+    return sendResponse(
+      res,
+      {},
+      "Service completed successfully",
+      RESPONSE_SUCCESS,
+      RESPONSE_CODE.SUCCESS
+    );
   } catch (error) {
     console.error(`ServiceController.completeService() -> Error: ${error}`);
-    return sendResponse(res, {}, "Internal Server Error", RESPONSE_FAILURE, RESPONSE_CODE.INTERNAL_SERVER_ERROR);
+    return sendResponse(
+      res,
+      {},
+      "Internal Server Error",
+      RESPONSE_FAILURE,
+      RESPONSE_CODE.INTERNAL_SERVER_ERROR
+    );
   }
 };
 
@@ -323,5 +445,5 @@ export default {
   completeService,
   cancelService,
   acceptService,
-  update
+  update,
 };

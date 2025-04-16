@@ -14,3 +14,10 @@ export const PaymentOptionsEnum = {
     ONLINE: "online",
     CARD: "card",
 };
+
+export const ServiceStatusEnum = {
+    PENDING: "pending",
+    ACCEPTED: "accepted",
+    COMPLETED: "completed",
+    CANCELLED: "cancelled",
+};
