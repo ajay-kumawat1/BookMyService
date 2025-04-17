@@ -1,6 +1,6 @@
 import path from "path";
 import { fileURLToPath } from "url";
-import { sendMail } from "./mail.js";
+import { sendSignUpMail } from "./mail.js";
 import pkg from "jsonwebtoken";
 const { sign, verify } = pkg;
 import { hash } from "bcrypt";
@@ -29,7 +29,7 @@ export async function storeOtpInCookie(res, otp) {
 
 export async function sendOtpMail(email, firstName, templatePath, otp) {
   const __dirname = path.dirname(fileURLToPath(import.meta.url));
-  await sendMail(email, firstName, otp, path.join(__dirname, templatePath));
+  await sendSignUpMail(email, firstName, otp, path.join(__dirname, templatePath));
 }
 
 export async function signToken(info) {

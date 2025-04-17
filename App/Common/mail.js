@@ -11,6 +11,27 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+export const sendSignUpMail = async (email, firstName, otp, emailTemplatePath) => {
+  try {
+    const emailTemplate = fs.readFileSync(emailTemplatePath, "utf-8");
+    const emailHtml = emailTemplate
+      .replace("{{OTP}}", otp)
+      .replace("{{NAME}}", firstName)
+      .replace("{{DATE}}", new Date().toDateString());
+
+    const info = await transporter.sendMail({
+      from: "bookmyservice786@gmail.com",
+      to: email,
+      subject: "Service Confirmation & OTP Details",
+      html: emailHtml,
+    });
+
+    console.log("Message sent: %s", info.messageId);
+  } catch (error) {
+    console.error("Error sending email:", error);
+  }
+};
+
 export const sendMail = async (service, firstName, otp, emailTemplatePath) => {
   try {
     const emailTemplate = fs.readFileSync(emailTemplatePath, "utf-8");
