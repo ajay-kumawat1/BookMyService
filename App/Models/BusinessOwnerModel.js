@@ -1,4 +1,5 @@
 import { model, Schema } from "mongoose";
+import { Role } from "../Common/enum.js";
 
 const BusinessSchema = new Schema(
   {
@@ -73,7 +74,7 @@ const BusinessSchema = new Schema(
     },
     role: {
       type: String,
-      default: "Owner",
+      default: Role.OWNER,
     },
     servicesOffered: [{ type: Schema.Types.ObjectId, ref: "Service" }],
     workingHours: {

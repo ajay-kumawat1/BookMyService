@@ -1,5 +1,5 @@
 import Joi from "joi";
-import { Role } from "../Common/common.js";
+import { Role } from "../Common/enum";
 
 export const validateUser = (data) => {
   const schema = Joi.object({

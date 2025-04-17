@@ -1,7 +1,7 @@
 
 import jwt from "jsonwebtoken";
-import { Role } from "../../Common/common.js";
 import { User } from '../UserModel';
+import { Role } from "../../Common/enum";
 
 
 jest.mock("jsonwebtoken");

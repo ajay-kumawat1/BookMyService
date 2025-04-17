@@ -21,3 +21,10 @@ export const ServiceStatusEnum = {
     COMPLETED: "completed",
     CANCELLED: "cancelled",
 };
+
+export const Role = {
+    SYSTEM_ADMIN: "SystemAdmin",
+    ADMIN: "Admin",
+    OWNER: "Owner",
+    USER: "User",
+  };

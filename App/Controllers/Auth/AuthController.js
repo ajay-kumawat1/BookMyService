@@ -1,7 +1,6 @@
 import {
   generateOtp,
   hashPassword,
-  Role,
   sendOtpMail,
   sendResponse,
   signToken,
@@ -12,6 +11,7 @@ import {
   RESPONSE_FAILURE,
   RESPONSE_SUCCESS,
 } from "../../Common/constant.js";
+import { Role } from "../../Common/enum.js";
 import { verifyOTP } from "../../Common/otpVerification.js";
 import { BusinessOwner } from "../../Models/BusinessOwnerModel.js";
 import { User } from "../../Models/UserModel.js";

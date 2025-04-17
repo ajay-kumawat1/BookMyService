@@ -1,6 +1,6 @@
 import { model, Schema } from "mongoose";
 import jwt from "jsonwebtoken";
-import { Role } from "../Common/common.js";
+import { Role } from "../Common/enum.js";
 
 export const UserSchema = new Schema(
   {
