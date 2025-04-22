@@ -4,7 +4,7 @@ import {
   RESPONSE_FAILURE,
   RESPONSE_SUCCESS,
 } from "../../Common/constant.js";
-import { User } from "../../Models/UserModel.js";
+import  User  from "../../Models/UserModel.js";
 import { uploadImageCloudinary, deleteImageCloudinary } from "../../Services/CloudnaryService.js";
 
 const getMyProfile = async (req, res) => {
@@ -33,8 +33,11 @@ const getMyProfile = async (req, res) => {
 };
 
 const updateProfile = async (req, res) => {
+  const { id } = req.params
+  const { body, file } = req;
   try {
-    let user = await User.findOne({ _id: req.params.id });
+    let user = await User.findOne({ _id: id });
+
     if (!user) {
       return sendResponse(
         res,
@@ -44,11 +47,23 @@ const updateProfile = async (req, res) => {
         RESPONSE_CODE.NOT_FOUND
       );
     }
+    let input = {
+      ...body
+    };
+
+    if (req.file) {
+      console.log(req.file.fieldname);
+      if (user.avatar) {
+        await deleteImageCloudinary(user.avatar)
+      }
+      input.avatar = await uploadImageCloudinary(file, 'User/avatar')
+    } else {
+      input.avatar = user.avatar
+    }
 
     user = await User.findByIdAndUpdate(
-      req.params.id,
-      { $set: req.body },
-      { new: true }
+      id,
+      input
     );
     if (!user) {
       return sendResponse(
@@ -62,7 +77,6 @@ const updateProfile = async (req, res) => {
 
     return sendResponse(
       res,
-      user,
       "Profile updated successfully",
       RESPONSE_SUCCESS,
       RESPONSE_CODE.SUCCESS

@@ -20,7 +20,6 @@ export const UserSchema = new Schema(
     },
     avatar: {
       type: String,
-      default: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTnFcoNkDNEQ9sXq36dfEj8FZjB4n_X3VFFew&s'
     },
     role: {
       type: String,
@@ -51,4 +50,4 @@ UserSchema.methods.generateAuthToken = function () {
   );
 };
 
-export const User = model('User', UserSchema);
+export default model('User', UserSchema);

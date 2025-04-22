@@ -4,7 +4,8 @@ import {
   RESPONSE_FAILURE,
   RESPONSE_SUCCESS,
 } from "../../Common/constant.js"
-import { BusinessOwner } from "../../Models/BusinessOwnerModel.js";
+import BusinessOwner from "../../Models/BusinessOwnerModel.js";
+import { uploadImageCloudinary, deleteImageCloudinary } from "../../Services/CloudnaryService.js";
 
 const getMyProfile = async (req, res) => {
   try {
@@ -39,8 +40,10 @@ const getMyProfile = async (req, res) => {
 };
 
 const updateProfile = async (req, res) => {
+  const { id } = req.params;
+  const { body, file } = req;
   try {
-    let businessOwner = await BusinessOwner.findOne({ _id: req.params.id });
+    let businessOwner = await BusinessOwner.findOne({ _id: id });
     if (!businessOwner) {
       return sendResponse(
         res,
@@ -50,11 +53,20 @@ const updateProfile = async (req, res) => {
         RESPONSE_CODE.NOT_FOUND
       );
     }
-
+    let input = {
+      ...body
+    }
+    if (file) {
+      if (businessOwner.businessLogo) {
+        await deleteImageCloudinary(businessOwner.businessLogo)
+      }
+      input.businessLogo = await uploadImageCloudinary(file, "Biusiness/Owner")
+    } else {
+      input.businessLogo = businessOwner.businessLogo
+    }
     businessOwner = await BusinessOwner.findByIdAndUpdate(
-      req.params.id,
-      { $set: req.body },
-      { new: true }
+      id,
+      input
     );
     if (!businessOwner) {
       return sendResponse(

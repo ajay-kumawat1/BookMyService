@@ -10,14 +10,18 @@ import {
   sendServiceAcceptMail,
   sendServiceBookedMail,
 } from "../../Common/mail.js";
-import { BusinessOwner } from "../../Models/BusinessOwnerModel.js";
-import { Service } from "../../Models/ServiceModel.js";
-import { User } from "../../Models/UserModel.js";
+import BusinessOwner from "../../Models/BusinessOwnerModel.js";
+import Service from "../../Models/ServiceModel.js";
+import User from "../../Models/UserModel.js";
+import { uploadImageCloudinary, deleteImageCloudinary } from "../../Services/CloudnaryService.js";
 
 const create = async (req, res) => {
+  const { body, files } = req;
+
   try {
+
     const isExist = await Service.findOne({
-      name: req.body.name,
+      name: body.name,
       businessOwner: req.user.id,
     });
     if (isExist) {
@@ -29,11 +33,16 @@ const create = async (req, res) => {
         RESPONSE_CODE.BAD_REQUEST
       );
     }
-
-    const service = await Service.create({
-      ...req.body,
-      businessOwner: req.user.id,
-    });
+    const imageUploads = files ? await Promise.all(files.map(file => uploadImageCloudinary(file, 'Services'))) : [];
+    let input = {
+      ...body,
+      images: imageUploads,
+      businessOwner: req.user.id
+    };
+    console.log("input",files);
+  
+    const service = await Service.create(input);
+  
     if (!service) {
       return sendResponse(
         res,
@@ -168,9 +177,11 @@ const getAll = async (req, res) => {
 };
 
 const update = async (req, res) => {
+  const { files, body } = req;
+  const { id } = req.params;
   try {
     const service = await Service.findOne({
-      _id: req.params.id,
+      _id: id,
       businessOwner: req.user.id,
     });
     if (!service) {
@@ -182,13 +193,23 @@ const update = async (req, res) => {
         RESPONSE_CODE.NOT_FOUND
       );
     }
+    let input = {
+      ...body,
+    }
+    if (files) {
+      if (Array.isArray(service.images)) {
+        await Promise.all(service.images.map(img => deleteImageCloudinary(img)));
+      }
 
+      input.images = Array.isArray(files)
+        ? await Promise.all(files.map(img => uploadImageCloudinary(img, 'Services'))):null;
+    } else {
+      input.images = service.images;
+    } 
     const updatedService = await Service.findByIdAndUpdate(
-      req.params.id,
-      { $set: req.body },
-      { new: true }
+      id,
+      input,
     );
-
     return sendResponse(
       res,
       updatedService,

@@ -1,6 +1,6 @@
 import { model, Schema } from "mongoose";
 
-const serviceSchema = new Schema(
+export const serviceSchema = new Schema(
   {
     name: { type: String, required: true },
     category: { type: String, required: true }, // Example: "Electrician", "Plumber", "Carpenter"
@@ -14,7 +14,11 @@ const serviceSchema = new Schema(
     },
     duration: { type: Number, required: false }, // Duration in minutes
     serviceOtp: { type: Number },
-    images: { type: [String], required: false }, // Array of image URLs
+    images:[{
+      type: String,
+      required: true,
+      default: null,
+  }], // Array of image URLs
     businessOwner: { type: Schema.Types.ObjectId, ref: "BusinessOwner" },
     booking_type: {
       type: [String],
@@ -32,4 +36,4 @@ const serviceSchema = new Schema(
   { timestamps: true }
 );
 
-export const Service = model("Service", serviceSchema);
+export default  model("Service", serviceSchema);

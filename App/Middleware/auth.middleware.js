@@ -4,8 +4,8 @@ import { RESPONSE_CODE, RESPONSE_FAILURE } from "../Common/constant.js";
 import pkg from "lodash";
 const { isEmpty } = pkg;
 import jwt from "jsonwebtoken";
-import { User } from "../Models/UserModel.js";
-import { BusinessOwner } from "../Models/BusinessOwnerModel.js";
+import  User  from "../Models/UserModel.js";
+import  BusinessOwner  from "../Models/BusinessOwnerModel.js";
 
 /**
  * Validate Registration Request

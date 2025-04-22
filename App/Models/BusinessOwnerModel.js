@@ -1,7 +1,7 @@
 import { model, Schema } from "mongoose";
 import { Role } from "../Common/enum.js";
 
-const BusinessSchema = new Schema(
+export const BusinessSchema = new Schema(
   {
     ownerFirstName: {
       type: String,
@@ -120,4 +120,4 @@ const BusinessSchema = new Schema(
   }
 );
 
-export const BusinessOwner = model("BusinessOwner", BusinessSchema);
+export default model("BusinessOwner", BusinessSchema);

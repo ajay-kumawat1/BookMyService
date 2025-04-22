@@ -13,8 +13,8 @@ import {
 } from "../../Common/constant.js";
 import { Role } from "../../Common/enum.js";
 import { verifyOTP } from "../../Common/otpVerification.js";
-import { BusinessOwner } from "../../Models/BusinessOwnerModel.js";
-import { User } from "../../Models/UserModel.js";
+import  BusinessOwner  from "../../Models/BusinessOwnerModel.js";
+import User  from "../../Models/UserModel.js";
 import { compare } from "bcrypt";
 
 const register = async (req, res) => {
