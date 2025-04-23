@@ -7,8 +7,11 @@ const route = Router();
 route.get('/users', verifySuperAdmin, adminController.getAllUsers);
 route.delete('/user/:id', verifySuperAdmin, adminController.deleteUser);
 
+// Business Management
+route.get('/businesses', verifySuperAdmin, adminController.getAllBusinessOwner);
+
 // Service Management
 route.get('/services', verifySuperAdmin, adminController.getAllServices);
-route.delete('/service/:id', verifySuperAdmin, adminController.deleteService);
+route.delete('/service/:id', verifySuperAdmin, adminController.deleteService)
 
 export default route;

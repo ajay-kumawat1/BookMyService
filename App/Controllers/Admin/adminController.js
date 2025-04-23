@@ -1,5 +1,6 @@
 import { sendResponse } from "../../Common/common";
 import { RESPONSE_CODE, RESPONSE_FAILURE } from "../../Common/constant";
+import BusinessOwnerModel from "../../Models/BusinessOwnerModel";
 import ServiceModel from "../../Models/ServiceModel";
 import UserModel from "../../Models/UserModel";
 
@@ -111,9 +112,31 @@ const deleteService = async (req, res) => {
     }
 }
 
+const getAllBusinessOwner = async (req, res) => {
+    const owners = await BusinessOwnerModel.find({});
+    if(!owners) {
+        return sendResponse(
+            res,
+            {},
+            "No business owners found",
+            RESPONSE_FAILURE,
+            RESPONSE_CODE.NOT_FOUND
+        );
+    }
+    const ownerCount = await BusinessOwnerModel.countDocuments();
+    return sendResponse(
+        res,
+        {owners, ownerCount},
+        "Business owners fetched successfully",
+        RESPONSE_SUCCESS,
+        RESPONSE_CODE.SUCCESS
+    );
+}
+
 export default {
   getAllUsers,
   deleteUser,
   getAllServices,
   deleteService,
+  getAllBusinessOwner,
 };
