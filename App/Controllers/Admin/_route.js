@@ -4,15 +4,15 @@ import adminController from "./adminController";
 const route = Router();
 
 // User Management
-route.get('/users', verifySuperAdmin, adminController.getAllUsers);
-route.delete('/user/:id', verifySuperAdmin, adminController.deleteUser);
+route.get('/users', adminController.getAllUsers);
+route.delete('/user/:id', adminController.deleteUser);
 
 // Business Management
-route.get('/businesses', verifySuperAdmin, adminController.getAllBusinessOwner);
-route.delete('/business/:id', verifySuperAdmin, adminController.deleteBusinessOwner);
+route.get('/businesses', adminController.getAllBusinessOwner);
+route.delete('/business/:id', adminController.deleteBusinessOwner);
 
 // Service Management
-route.get('/services', verifySuperAdmin, adminController.getAllServices);
-route.delete('/service/:id', verifySuperAdmin, adminController.deleteService)
+route.get('/services', adminController.getAllServices);
+route.delete('/service/:id', adminController.deleteService);
 
 export default route;
