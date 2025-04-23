@@ -1,8 +1,8 @@
-import { sendResponse } from "../../Common/common";
-import { RESPONSE_CODE, RESPONSE_FAILURE } from "../../Common/constant";
-import BusinessOwnerModel from "../../Models/BusinessOwnerModel";
-import ServiceModel from "../../Models/ServiceModel";
-import UserModel from "../../Models/UserModel";
+import { sendResponse } from "../../Common/common.js";
+import { RESPONSE_CODE, RESPONSE_FAILURE } from "../../Common/constant.js";
+import BusinessOwnerModel from "../../Models/BusinessOwnerModel.js";
+import ServiceModel from "../../Models/ServiceModel.js";
+import UserModel from "../../Models/UserModel.js";
 
 const getAllUsers = async (req, res) => {
   try {

@@ -168,7 +168,7 @@ const validJWTNeeded = async (req, res, next) => {
       {},
       "Authentication required. Please log in.",
       RESPONSE_FAILURE,
-      RESPONSE_CODE.UNAUTHORIZED
+      RESPONSE_CODE.UNAUTHORISED
     );
   }
   const token = authToken.split(" ")[1];
