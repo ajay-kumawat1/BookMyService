@@ -29,6 +29,34 @@ const getAllUsers = async (req, res) => {
   }
 };
 
+const deleteUser = async (req, res) => {
+    const { id } = req.params;
+    
+    try {
+        const user = await UserModel.findByIdAndDelete(id);
+        if (!user) {
+        return sendResponse(
+            res,
+            {},
+            "User not found",
+            RESPONSE_FAILURE,
+            RESPONSE_CODE.NOT_FOUND
+        );
+        }
+    
+        return sendResponse(
+        res,
+        {},
+        "User deleted successfully",
+        RESPONSE_SUCCESS,
+        RESPONSE_CODE.SUCCESS
+        );
+    } catch (error) {
+        console.error(`AdminController.deleteUser() -> Error: ${error}`);
+    }
+}
+
 export default {
   getAllUsers,
+  deleteUser,
 };
