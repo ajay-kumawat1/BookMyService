@@ -84,8 +84,36 @@ const getAllServices = async (req, res) => {
   }
 };
 
+const deleteService = async (req, res) => {
+    const { id } = req.params;
+    
+    try {
+        const service = await ServiceModel.findByIdAndDelete(id);
+        if (!service) {
+        return sendResponse(
+            res,
+            {},
+            "Service not found",
+            RESPONSE_FAILURE,
+            RESPONSE_CODE.NOT_FOUND
+        );
+        }
+    
+        return sendResponse(
+        res,
+        {},
+        "Service deleted successfully",
+        RESPONSE_SUCCESS,
+        RESPONSE_CODE.SUCCESS
+        );
+    } catch (error) {
+        console.error(`AdminController.deleteService() -> Error: ${error}`);
+    }
+}
+
 export default {
   getAllUsers,
   deleteUser,
   getAllServices,
+  deleteService,
 };

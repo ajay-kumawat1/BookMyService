@@ -9,5 +9,6 @@ route.delete('/user/:id', verifySuperAdmin, adminController.deleteUser);
 
 // Service Management
 route.get('/services', verifySuperAdmin, adminController.getAllServices);
+route.delete('/service/:id', verifySuperAdmin, adminController.deleteService);
 
 export default route;
