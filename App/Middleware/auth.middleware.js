@@ -3,7 +3,7 @@ import { sendResponse } from "../Common/common.js";
 import { RESPONSE_CODE, RESPONSE_FAILURE } from "../Common/constant.js";
 import pkg from "lodash";
 const { isEmpty } = pkg;
-import jwt from "jsonwebtoken";
+import jwt, { decode } from "jsonwebtoken";
 import  User  from "../Models/UserModel.js";
 import  BusinessOwner  from "../Models/BusinessOwnerModel.js";
 
@@ -229,7 +229,7 @@ const isAdminAuthenticated = async (req, res, next) => {
 
   try {
     const decodeToken = jwt.verify(token, process.env.JWT_SECRET);
-    if (decodeToken.role === "Admin") {
+    if (decodeToken.businessOwner.role === "SuperAdmin") {
       req.user = decodeToken;
       next();
     } else {

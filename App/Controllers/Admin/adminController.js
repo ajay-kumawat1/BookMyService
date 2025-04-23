@@ -137,7 +137,7 @@ const deleteService = async (req, res) => {
 
 const getAllBusinessOwner = async (req, res) => {
   try {
-    const owners = await BusinessOwnerModel.find({}).lean();
+    const owners = await BusinessOwnerModel.find({ role: { $ne: 'SuperAdmin' } }).lean();
     if (!owners || owners.length === 0) {
       return sendResponse(
         res,
@@ -199,6 +199,37 @@ const deleteBusinessOwner = async (req, res) => {
   }
 };
 
+// In adminController.js
+const getStatistics = async (req, res) => {
+  try {
+    const totalUsers = await UserModel.countDocuments();
+    const totalBusinessOwners = await BusinessOwnerModel.countDocuments();
+    const totalServices = await ServiceModel.countDocuments();
+    
+    return sendResponse(
+      res,
+      { 
+        totalUsers,
+        totalBusinessOwners,
+        totalServices,
+        totalBookings: 0 // Add actual booking count if you have that model
+      },
+      "Statistics fetched successfully",
+      RESPONSE_SUCCESS,
+      RESPONSE_CODE.SUCCESS
+    );
+  } catch (error) {
+    console.error(`AdminController.getStatistics() -> Error: ${error}`);
+    return sendResponse(
+      res,
+      {},
+      "Server error while fetching statistics",
+      RESPONSE_FAILURE,
+      RESPONSE_CODE.SERVER_ERROR
+    );
+  }
+};
+
 export default {
   getAllUsers,
   deleteUser,
@@ -206,4 +237,5 @@ export default {
   deleteService,
   getAllBusinessOwner,
   deleteBusinessOwner,
+  getStatistics,
 };

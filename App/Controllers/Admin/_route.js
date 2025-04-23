@@ -15,4 +15,7 @@ route.delete('/business/:id', adminController.deleteBusinessOwner);
 route.get('/services', adminController.getAllServices);
 route.delete('/service/:id', adminController.deleteService);
 
+// Add to admin routes
+route.get('/statistics', adminController.getStatistics);
+
 export default route;
