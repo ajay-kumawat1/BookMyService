@@ -60,8 +60,13 @@ const deleteUser = async (req, res) => {
 
 const getAllServices = async (req, res) => {
   try {
-    const services = await ServiceModel.find({});
-    if (!services) {
+    const services = await ServiceModel.find({})
+      .populate({
+        path: "businessOwner"
+      })
+      .lean();
+
+    if (!services || services.length === 0) {
       return sendResponse(
         res,
         {},
@@ -71,17 +76,22 @@ const getAllServices = async (req, res) => {
       );
     }
 
-    const serviceCount = await ServiceModel.countDocuments();
-
     return sendResponse(
       res,
-      { services, serviceCount },
+      { services, serviceCount: services.length },
       "Services fetched successfully",
       RESPONSE_SUCCESS,
       RESPONSE_CODE.SUCCESS
     );
   } catch (error) {
     console.error(`AdminController.getAllServices() -> Error: ${error}`);
+    return sendResponse(
+      res,
+      {},
+      "Server error while fetching services",
+      RESPONSE_FAILURE,
+      RESPONSE_CODE.SERVER_ERROR
+    );
   }
 };
 
