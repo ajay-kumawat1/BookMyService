@@ -7,4 +7,7 @@ const route = Router();
 route.get('/users', verifySuperAdmin, adminController.getAllUsers);
 route.delete('/user/:id', verifySuperAdmin, adminController.deleteUser);
 
+// Service Management
+route.get('/services', verifySuperAdmin, adminController.getAllServices);
+
 export default route;

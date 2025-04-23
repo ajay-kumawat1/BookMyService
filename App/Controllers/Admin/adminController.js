@@ -1,5 +1,6 @@
 import { sendResponse } from "../../Common/common";
 import { RESPONSE_CODE, RESPONSE_FAILURE } from "../../Common/constant";
+import ServiceModel from "../../Models/ServiceModel";
 import UserModel from "../../Models/UserModel";
 
 const getAllUsers = async (req, res) => {
@@ -56,7 +57,35 @@ const deleteUser = async (req, res) => {
     }
 }
 
+const getAllServices = async (req, res) => {
+  try {
+    const services = await ServiceModel.find({});
+    if (!services) {
+      return sendResponse(
+        res,
+        {},
+        "No services found",
+        RESPONSE_FAILURE,
+        RESPONSE_CODE.NOT_FOUND
+      );
+    }
+
+    const serviceCount = await ServiceModel.countDocuments();
+    
+    return sendResponse(
+      res,
+      {services, serviceCount},
+      "Services fetched successfully",
+      RESPONSE_SUCCESS,
+      RESPONSE_CODE.SUCCESS
+    );
+  } catch (error) {
+    console.error(`AdminController.getAllServices() -> Error: ${error}`);
+  }
+};
+
 export default {
   getAllUsers,
   deleteUser,
+  getAllServices,
 };
