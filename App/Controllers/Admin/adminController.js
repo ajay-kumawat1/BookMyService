@@ -18,10 +18,10 @@ const getAllUsers = async (req, res) => {
     }
 
     const userCount = await UserModel.countDocuments();
-    
+
     return sendResponse(
       res,
-      {users, userCount},
+      { users, userCount },
       "Users fetched successfully",
       RESPONSE_SUCCESS,
       RESPONSE_CODE.SUCCESS
@@ -32,31 +32,31 @@ const getAllUsers = async (req, res) => {
 };
 
 const deleteUser = async (req, res) => {
-    const { id } = req.params;
-    
-    try {
-        const user = await UserModel.findByIdAndDelete(id);
-        if (!user) {
-        return sendResponse(
-            res,
-            {},
-            "User not found",
-            RESPONSE_FAILURE,
-            RESPONSE_CODE.NOT_FOUND
-        );
-        }
-    
-        return sendResponse(
+  const { id } = req.params;
+
+  try {
+    const user = await UserModel.findByIdAndDelete(id);
+    if (!user) {
+      return sendResponse(
         res,
         {},
-        "User deleted successfully",
-        RESPONSE_SUCCESS,
-        RESPONSE_CODE.SUCCESS
-        );
-    } catch (error) {
-        console.error(`AdminController.deleteUser() -> Error: ${error}`);
+        "User not found",
+        RESPONSE_FAILURE,
+        RESPONSE_CODE.NOT_FOUND
+      );
     }
-}
+
+    return sendResponse(
+      res,
+      {},
+      "User deleted successfully",
+      RESPONSE_SUCCESS,
+      RESPONSE_CODE.SUCCESS
+    );
+  } catch (error) {
+    console.error(`AdminController.deleteUser() -> Error: ${error}`);
+  }
+};
 
 const getAllServices = async (req, res) => {
   try {
@@ -72,10 +72,10 @@ const getAllServices = async (req, res) => {
     }
 
     const serviceCount = await ServiceModel.countDocuments();
-    
+
     return sendResponse(
       res,
-      {services, serviceCount},
+      { services, serviceCount },
       "Services fetched successfully",
       RESPONSE_SUCCESS,
       RESPONSE_CODE.SUCCESS
@@ -86,52 +86,78 @@ const getAllServices = async (req, res) => {
 };
 
 const deleteService = async (req, res) => {
-    const { id } = req.params;
-    
-    try {
-        const service = await ServiceModel.findByIdAndDelete(id);
-        if (!service) {
-        return sendResponse(
-            res,
-            {},
-            "Service not found",
-            RESPONSE_FAILURE,
-            RESPONSE_CODE.NOT_FOUND
-        );
-        }
-    
-        return sendResponse(
+  const { id } = req.params;
+
+  try {
+    const service = await ServiceModel.findByIdAndDelete(id);
+    if (!service) {
+      return sendResponse(
         res,
         {},
-        "Service deleted successfully",
-        RESPONSE_SUCCESS,
-        RESPONSE_CODE.SUCCESS
-        );
-    } catch (error) {
-        console.error(`AdminController.deleteService() -> Error: ${error}`);
+        "Service not found",
+        RESPONSE_FAILURE,
+        RESPONSE_CODE.NOT_FOUND
+      );
     }
-}
+
+    return sendResponse(
+      res,
+      {},
+      "Service deleted successfully",
+      RESPONSE_SUCCESS,
+      RESPONSE_CODE.SUCCESS
+    );
+  } catch (error) {
+    console.error(`AdminController.deleteService() -> Error: ${error}`);
+  }
+};
 
 const getAllBusinessOwner = async (req, res) => {
-    const owners = await BusinessOwnerModel.find({});
-    if(!owners) {
-        return sendResponse(
-            res,
-            {},
-            "No business owners found",
-            RESPONSE_FAILURE,
-            RESPONSE_CODE.NOT_FOUND
-        );
-    }
-    const ownerCount = await BusinessOwnerModel.countDocuments();
+  const owners = await BusinessOwnerModel.find({});
+  if (!owners) {
     return sendResponse(
-        res,
-        {owners, ownerCount},
-        "Business owners fetched successfully",
-        RESPONSE_SUCCESS,
-        RESPONSE_CODE.SUCCESS
+      res,
+      {},
+      "No business owners found",
+      RESPONSE_FAILURE,
+      RESPONSE_CODE.NOT_FOUND
     );
-}
+  }
+  const ownerCount = await BusinessOwnerModel.countDocuments();
+  return sendResponse(
+    res,
+    { owners, ownerCount },
+    "Business owners fetched successfully",
+    RESPONSE_SUCCESS,
+    RESPONSE_CODE.SUCCESS
+  );
+};
+
+const deleteBusinessOwner = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const owner = await BusinessOwnerModel.findByIdAndDelete(id);
+    if (!owner) {
+      return sendResponse(
+        res,
+        {},
+        "Business owner not found",
+        RESPONSE_FAILURE,
+        RESPONSE_CODE.NOT_FOUND
+      );
+    }
+    return sendResponse(
+      res,
+      {},
+      "Business owner deleted successfully",
+      RESPONSE_SUCCESS,
+      RESPONSE_CODE.SUCCESS
+    );
+  } catch (error) {
+    console.error(`AdminController.deleteBusinessOwner() -> Error: ${error}`);
+  }
+};
 
 export default {
   getAllUsers,
@@ -139,4 +165,5 @@ export default {
   getAllServices,
   deleteService,
   getAllBusinessOwner,
+  deleteBusinessOwner,
 };

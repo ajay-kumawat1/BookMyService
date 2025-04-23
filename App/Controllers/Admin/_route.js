@@ -9,6 +9,7 @@ route.delete('/user/:id', verifySuperAdmin, adminController.deleteUser);
 
 // Business Management
 route.get('/businesses', verifySuperAdmin, adminController.getAllBusinessOwner);
+route.delete('/business/:id', verifySuperAdmin, adminController.deleteBusinessOwner);
 
 // Service Management
 route.get('/services', verifySuperAdmin, adminController.getAllServices);
