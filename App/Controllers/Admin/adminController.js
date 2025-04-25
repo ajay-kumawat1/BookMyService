@@ -1,5 +1,6 @@
 import { sendResponse } from "../../Common/common.js";
 import { RESPONSE_CODE, RESPONSE_FAILURE, RESPONSE_SUCCESS } from "../../Common/constant.js";
+import { Role } from "../../Common/enum.js";
 import BusinessOwnerModel from "../../Models/BusinessOwnerModel.js";
 import ServiceModel from "../../Models/ServiceModel.js";
 import UserModel from "../../Models/UserModel.js";
@@ -137,7 +138,7 @@ const deleteService = async (req, res) => {
 
 const getAllBusinessOwner = async (req, res) => {
   try {
-    const owners = await BusinessOwnerModel.find({ role: { $ne: 'SuperAdmin' } }).lean();
+    const owners = await BusinessOwnerModel.find({ role: { $ne: Role.SUPER_ADMIN } }).lean();
     if (!owners || owners.length === 0) {
       return sendResponse(
         res,

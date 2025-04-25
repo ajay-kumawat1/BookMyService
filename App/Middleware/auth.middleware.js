@@ -6,6 +6,7 @@ const { isEmpty } = pkg;
 import jwt, { decode } from "jsonwebtoken";
 import  User  from "../Models/UserModel.js";
 import  BusinessOwner  from "../Models/BusinessOwnerModel.js";
+import { Role } from "../Common/enum.js";
 
 /**
  * Validate Registration Request
@@ -229,7 +230,7 @@ const isAdminAuthenticated = async (req, res, next) => {
 
   try {
     const decodeToken = jwt.verify(token, process.env.JWT_SECRET);
-    if (decodeToken.businessOwner.role === "SuperAdmin") {
+    if (decodeToken.businessOwner.role === Role.SUPER_ADMIN) {
       req.user = decodeToken;
       next();
     } else {

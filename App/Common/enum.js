@@ -23,7 +23,7 @@ export const ServiceStatusEnum = {
 };
 
 export const Role = {
-    SYSTEM_ADMIN: "SystemAdmin",
+    SUPER_ADMIN: "SuperAdmin",
     ADMIN: "Admin",
     OWNER: "Owner",
     USER: "User",
