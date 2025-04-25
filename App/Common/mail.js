@@ -60,7 +60,7 @@ export const sendServiceBookedMail = async (owner, service, user, emailTemplateP
   try {
     const emailTemplate = fs.readFileSync(emailTemplatePath, "utf-8");
     const emailHtml = emailTemplate
-      .replace("{{NAME}}", owner.firstName)
+      .replace("{{NAME}}", owner.ownerFirstName)
       .replace("{{SERVICE_NAME}}", service.name)
       .replace("{{SERVICE_DESCRIPTION}}", service.description)
       .replace("{{SERVICE_CHARGE}}", service.serviceCharge)
@@ -93,9 +93,9 @@ export const sendServiceAcceptMail = async (owner, service, user, emailTemplateP
       .replace("{{SERVICE_DESCRIPTION}}", service.description)
       .replace("{{SERVICE_CHARGE}}", service.serviceCharge)
       .replace("{{DATE}}", service.createdAt.toDateString())
-      .replace("{{USER_NAME}}", owner.firstName)
+      .replace("{{USER_NAME}}", owner.ownerFirstName)
       .replace("{{USER_EMAIL}}", owner.email)
-      .replace("{{USER_PHONE}}", owner.phone)
+      .replace("{{USER_PHONE}}", owner.phoneNumber)
 
     const info = await transporter.sendMail({
       from: "bookmyservice786@gmail.com",
