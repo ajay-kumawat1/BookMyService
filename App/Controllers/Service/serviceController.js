@@ -39,10 +39,8 @@ const create = async (req, res) => {
       images: imageUploads,
       businessOwner: req.user.id
     };
-    console.log("input",files);
   
     const service = await Service.create(input);
-  
     if (!service) {
       return sendResponse(
         res,

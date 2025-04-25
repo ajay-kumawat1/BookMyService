@@ -52,7 +52,6 @@ const updateProfile = async (req, res) => {
     };
 
     if (req.file) {
-      console.log(req.file.fieldname);
       if (user.avatar) {
         await deleteImageCloudinary(user.avatar)
       }

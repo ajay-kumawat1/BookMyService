@@ -116,7 +116,7 @@ const verifyOtpAndCreateUser = async (req, res) => {
     res.clearCookie("user_data", "otp");
     return sendResponse(
       res,
-      { user, token }, // Include token in response
+      { user, token },
       "User registered successfully",
       RESPONSE_SUCCESS,
       RESPONSE_CODE.CREATED
@@ -548,7 +548,6 @@ const businessOwnerLogin = async (req, res) => {
 
 const getMe = async (req, res) => {
   try {
-    // req.user is set by validJWTNeeded middleware
     const userId = req.user.id;
 
     // Check how userType is determined
