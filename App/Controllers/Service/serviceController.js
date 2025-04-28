@@ -40,9 +40,9 @@ const create = async (req, res) => {
       businessOwner: req.user.id
     };
     console.log("input",files);
-  
+
     const service = await Service.create(input);
-  
+
     if (!service) {
       return sendResponse(
         res,
@@ -205,7 +205,7 @@ const update = async (req, res) => {
         ? await Promise.all(files.map(img => uploadImageCloudinary(img, 'Services'))):null;
     } else {
       input.images = service.images;
-    } 
+    }
     const updatedService = await Service.findByIdAndUpdate(
       id,
       input,
@@ -265,6 +265,13 @@ const bookService = async (req, res) => {
       );
     }
 
+    const Updation = await User.findOneAndUpdate(
+      { _id: req.user.id },
+      { $push: { bookedServiceIds: req.params.id } },
+      { new: true }
+    );
+
+    await Updation.save();
     // Send mail to service owner
     const owner = await BusinessOwner.findOne({
       servicesOffered: req.params.id,
@@ -273,8 +280,7 @@ const bookService = async (req, res) => {
       await sendServiceBookedMail(
         owner,
         service,
-        userData,
-        "/email_template/service_book_email_template.html"
+        userData
       );
     }
 
@@ -333,8 +339,7 @@ const acceptService = async (req, res) => {
     await sendServiceAcceptMail(
       serviceOwner,
       serviecData,
-      userData,
-      "/email_template/service_accept_email_template.html"
+      userData
     );
 
     return sendResponse(
@@ -387,8 +392,7 @@ const cancelService = async (req, res) => {
     // send cancel service mail to user
     await sendCancelServiceMail(
       services,
-      user,
-      "/email_template/cancel_service_email_template.html"
+      user
     );
 
     return sendResponse(
@@ -457,6 +461,65 @@ const completeService = async (req, res) => {
   }
 };
 
+const deleteService = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Find the service and check if the business owner is authorized to delete it
+    const service = await Service.findOne({
+      _id: id,
+      businessOwner: req.user.id,
+    });
+
+    if (!service) {
+      return sendResponse(
+        res,
+        {},
+        "Service not found or you are not authorized to delete it",
+        RESPONSE_FAILURE,
+        RESPONSE_CODE.NOT_FOUND
+      );
+    }
+
+    // Delete images from Cloudinary if they exist
+    if (Array.isArray(service.images) && service.images.length > 0) {
+      await Promise.all(service.images.map(img => deleteImageCloudinary(img)));
+    }
+
+    // Remove the service from the business owner's servicesOffered array
+    await BusinessOwner.findByIdAndUpdate(
+      req.user.id,
+      { $pull: { servicesOffered: id } }
+    );
+
+    // Remove the service from any users who have booked it
+    await User.updateMany(
+      { bookedServiceIds: id },
+      { $pull: { bookedServiceIds: id } }
+    );
+
+    // Delete the service
+    await Service.findByIdAndDelete(id);
+
+    return sendResponse(
+      res,
+      {},
+      "Service deleted successfully",
+      RESPONSE_SUCCESS,
+      RESPONSE_CODE.SUCCESS
+    );
+  } catch (error) {
+    console.error(`ServiceController.deleteService() -> Error: ${error}`);
+    return sendResponse(
+      res,
+      {},
+      "Server error while deleting service",
+      RESPONSE_FAILURE,
+      RESPONSE_CODE.INTERNAL_SERVER_ERROR
+    );
+  }
+};
+
 export default {
   create,
   getMy,
@@ -467,4 +530,5 @@ export default {
   cancelService,
   acceptService,
   update,
+  deleteService,
 };

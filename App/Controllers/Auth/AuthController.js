@@ -37,7 +37,7 @@ const register = async (req, res) => {
     await sendOtpMail(
       email,
       firstName,
-      "/email_template/signup_email_template.html",
+      "",
       otp
     );
 
@@ -152,7 +152,7 @@ const resendOtp = async (req, res) => {
     await sendOtpMail(
       email,
       user.firstName,
-      "/email_template/signup_email_template.html",
+      "",
       otp
     );
 
@@ -246,7 +246,7 @@ const forgotPassword = async (req, res) => {
     await sendOtpMail(
       email,
       user.firstName,
-      "/email_template/signup_email_template.html",
+      "",
       otp
     );
 
@@ -384,7 +384,7 @@ const registerBusinessOwner = async (req, res) => {
     await sendOtpMail(
       email,
       ownerFirstName,
-      "/email_template/signup_email_template.html",
+      "",
       otp
     );
 

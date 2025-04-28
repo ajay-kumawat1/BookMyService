@@ -6,7 +6,7 @@
 
 | No. | Name  | PORT     | Purpose           | Domain                                     |
 | --- | ----- | -------- | ----------------- | ------------------------------------------ |
-| 1.  | LOCAL | 5000     | Local development | <http://localhost:5000>                    |
+| 1.  | LOCAL | 5000     | Local development | <https://bookmyservice.onrender.com>                    |
 
 ## Execute Project
 

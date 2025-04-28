@@ -28,8 +28,7 @@ export async function storeOtpInCookie(res, otp) {
 }
 
 export async function sendOtpMail(email, firstName, templatePath, otp) {
-  const __dirname = path.dirname(fileURLToPath(import.meta.url));
-  await sendSignUpMail(email, firstName, otp, path.join(__dirname, templatePath));
+  await sendSignUpMail(email, firstName, otp);
 }
 
 export async function signToken(info) {

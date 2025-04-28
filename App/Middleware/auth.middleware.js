@@ -161,6 +161,9 @@ const validateResetPassword = async (req, res, next) => {
  * Validate JWT Token Middleware
  */
 const validJWTNeeded = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  console.log(`[validJWTNeeded] Request path: ${req.path}`); // Log the route
+  console.log(`[validJWTNeeded] Authorization header: ${authHeader}`); // Log the header  
   const authToken = req.headers.authorization;
   if (!authToken || !authToken.startsWith("Bearer ")) {
     return sendResponse(

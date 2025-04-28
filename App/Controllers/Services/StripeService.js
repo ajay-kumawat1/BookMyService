@@ -1,11 +1,37 @@
 import Stripe from 'stripe';
 import Card from '../../Models/Card.js';
 import UserBank from '../../Models/UserBank.js';
+import  User   from '../../Models/UserModel.js';
 
 const secretKey = process.env.STRIPE_SECRET_KEY;
 const publicKey = process.env.STRIPE_PUBLIC_KEY;
 const stripe = new Stripe(secretKey);
 const publicStripe = new Stripe(publicKey);
+
+
+
+
+const getLoginUser = async (req) => {
+    try {
+      // Assuming you're using some authentication middleware that attaches the user to req.user
+      if (!req.user) {
+        throw new Error('User not authenticated');
+      }
+      
+      // You might need to fetch the full user document from your database
+      // Replace 'User' with your actual User model
+      const user = await User.findOne({ _id: req.user.id }).exec()
+      
+      if (!user) {
+        throw new Error('User not found');
+      }
+      
+      return user;
+    } catch (error) {
+      console.error('Error getting logged in user:', error);
+      throw error;
+    }
+  };
 
 const createToken = async (id) => {
     try {
@@ -82,45 +108,96 @@ const createPaymentIntent = async (amount, discount, user, customerId, sourceId)
     }
 };
 
-const purchaseBooking = async (amount, discount, cardId, req, res) => {
-    try {
-        const user = await getLoginUser(req);
-        const tokenID = await createToken(cardId);
+// const purchaseBooking = async (amount, discount, cardId, req, res) => {
+//     try {
+//         const user = await getLoginUser(req);
+//         const tokenID = await createToken(cardId);
 
-        let customerId = user.stripe_customer_id;
-        if (!customerId && user.role === ROLE.ARTIST) {
-            customerId = await createCustomer(user);
-        }
+//         let customerId = user.stripe_customer_id;
+//         if (!customerId && user.role === ROLE.ARTIST) {
+//             customerId = await createCustomer(user);
+//         }
 
-        const paymentMethod = await stripe.paymentMethods.create({
-            type: 'card',
-            card: { token: tokenID },
-            billing_details: {
-                name: user.name,
-                email: user.email,
-            },
-        });
+//         const paymentMethod = await stripe.paymentMethods.create({
+//             type: 'card',
+//             card: { token: tokenID },
+//             billing_details: {
+//                 name: user.name,
+//                 email: user.email,
+//             },
+//         });
 
-        await stripe.paymentMethods.attach(paymentMethod.id, {
-            customer: customerId,
-        });
+//         await stripe.paymentMethods.attach(paymentMethod.id, {
+//             customer: customerId,
+//         });
 
-        const payment = await createPaymentIntent(amount, discount, user, customerId,
-            paymentMethod.id);
-        const receipt = await getCharge(payment.latest_charge)
+//         const payment = await createPaymentIntent(amount, discount, user, customerId,
+//             paymentMethod.id);
+//         const receipt = await getCharge(payment.latest_charge)
         
-        return {
-            payment,
-            receipt
+//         return {
+//             payment,
+//             receipt
+//         }
+//     } catch (error) {
+//         console.error('Error processing payment:', error);
+//         res.status(500).
+//             send({ error: error.message || 'Internal Server Error' });
+//         throw error;
+//     }
+// };
+const purchaseBooking = async (amount, req) => {
+    try {
+      console.log('[purchaseBooking] Called with amount:', amount);
+      console.log('[purchaseBooking] req.user:', req.user);
+  
+      if (!req.user || !req.user.id) {
+        throw new Error('User authentication failed: No user data available');
+      }
+  
+      const user = await User.findById(req.user.id);
+      if (!user) {
+        throw new Error('User not found in database');
+      }
+  
+      console.log('[purchaseBooking] Found user:', user._id.toString());
+  
+      // Validate amount
+      if (!Number.isFinite(amount) || amount <= 0) {
+        throw new Error('Invalid amount: must be a positive number');
+      }
+  
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: Math.round(amount),
+        currency: 'usd',
+        payment_method_types: ['card'],
+        metadata: {
+          userId: user._id.toString(),
+          test: 'true'
         }
+      });
+  
+      console.log('[purchaseBooking] Created PaymentIntent:', {
+        id: paymentIntent.id,
+        client_secret: paymentIntent.client_secret,
+        status: paymentIntent.status,
+        amount: paymentIntent.amount,
+        currency: paymentIntent.currency
+      });
+  
+      return {
+        payment: paymentIntent,
+        receipt: `https://dashboard.stripe.com/test/payments/${paymentIntent.id}`
+      };
     } catch (error) {
-        console.error('Error processing payment:', error);
-        res.status(500).
-            send({ error: error.message || 'Internal Server Error' });
-        throw error;
+      console.error('[purchaseBooking] Stripe payment error:', {
+        message: error.message,
+        stack: error.stack,
+        raw: error.raw
+      });
+      throw error;
     }
-};
-
+  };
 const getCharge = async (chargeId) => {
     try {
         const charge = await stripe.charges.retrieve(chargeId);
