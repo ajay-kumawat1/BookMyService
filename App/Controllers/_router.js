@@ -12,7 +12,7 @@ app.use(express.json());
 
 app.use("/auth", Auth);
 app.use("/user", User);
-app.use("/admin", Admin);
+app.use("/admin", isAdminAuthenticated, Admin);
 app.use("/service", Service);
 app.use("/business-owner", BusinessOwner);
 app.use("/booking",Booking)

@@ -163,7 +163,7 @@ const validateResetPassword = async (req, res, next) => {
 const validJWTNeeded = async (req, res, next) => {
   const authHeader = req.headers.authorization;
   console.log(`[validJWTNeeded] Request path: ${req.path}`); // Log the route
-  console.log(`[validJWTNeeded] Authorization header: ${authHeader}`); // Log the header  
+  console.log(`[validJWTNeeded] Authorization header: ${authHeader}`); // Log the header
   const authToken = req.headers.authorization;
   if (!authToken || !authToken.startsWith("Bearer ")) {
     return sendResponse(
@@ -178,6 +178,8 @@ const validJWTNeeded = async (req, res, next) => {
 
   try {
     const decode = jwt.verify(token, process.env.JWT_SECRET);
+    console.log("[validJWTNeeded] Decoded token:", decode);
+
     const userType = decode.businessOwner ? "businessOwner" : "user";
     const userId = decode[userType]?.id;
     const userModel = userType === "businessOwner" ? BusinessOwner : User;
@@ -203,7 +205,14 @@ const validJWTNeeded = async (req, res, next) => {
       );
     }
 
-    req.user = decode[userType];
+    // Create a user object with all necessary properties
+    req.user = {
+      id: userId,
+      role: user.role || decode[userType]?.role,
+      ...decode[userType]
+    };
+
+    console.log("[validJWTNeeded] User set in request:", req.user);
     return next();
   } catch (error) {
     console.error(`validJWTNeeded() -> Error: ${error.message}`);
@@ -232,14 +241,61 @@ const isAdminAuthenticated = async (req, res, next) => {
 
   try {
     const decodeToken = jwt.verify(token, process.env.JWT_SECRET);
-    if (decodeToken.businessOwner.role === "SuperAdmin") {
-      req.user = decodeToken;
-      next();
+    console.log("[isAdminAuthenticated] Decoded token:", decodeToken);
+
+    // Check if the user is a business owner with SuperAdmin role
+    if (decodeToken.businessOwner && decodeToken.businessOwner.role === "SuperAdmin") {
+      // Find the business owner in the database to get the most up-to-date role
+      const businessOwner = await BusinessOwner.findById(decodeToken.businessOwner.id);
+
+      if (!businessOwner) {
+        return sendResponse(
+          res,
+          {},
+          "Business owner not found",
+          RESPONSE_FAILURE,
+          RESPONSE_CODE.UNAUTHORISED
+        );
+      }
+
+      console.log("[isAdminAuthenticated] Business owner from DB:", businessOwner);
+
+      if (businessOwner.role === "SuperAdmin") {
+        req.user = {
+          ...decodeToken.businessOwner,
+          role: businessOwner.role
+        };
+        console.log("[isAdminAuthenticated] SuperAdmin authenticated:", req.user);
+        return next();
+      } else {
+        console.log("[isAdminAuthenticated] Not a SuperAdmin:", businessOwner.role);
+        return sendResponse(
+          res,
+          {},
+          "Unauthorized: SuperAdmin access required",
+          RESPONSE_FAILURE,
+          RESPONSE_CODE.UNAUTHORISED
+        );
+      }
     } else {
-      return next(403, "Unathorized");
+      console.log("[isAdminAuthenticated] Not a business owner or missing role");
+      return sendResponse(
+        res,
+        {},
+        "Unauthorized: SuperAdmin access required",
+        RESPONSE_FAILURE,
+        RESPONSE_CODE.UNAUTHORISED
+      );
     }
   } catch (error) {
-    next(500, error.message);
+    console.error(`isAdminAuthenticated() -> Error: ${error.message}`);
+    return sendResponse(
+      res,
+      {},
+      "Invalid or expired token. Please log in again.",
+      RESPONSE_FAILURE,
+      RESPONSE_CODE.UNAUTHORISED
+    );
   }
 };
 

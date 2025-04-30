@@ -550,12 +550,15 @@ const getMe = async (req, res) => {
   try {
     // req.user is set by validJWTNeeded middleware
     const userId = req.user.id;
+    console.log("getMe() -> User ID:", userId);
+    console.log("getMe() -> User Role:", req.user.role);
 
     // Check how userType is determined
     let userType;
-    if (req.user.role == "User") {
+    if (req.user.role === "User") {
       userType = "User";
     } else {
+      // This includes Owner and SuperAdmin roles
       userType = "Owner";
     }
 
@@ -576,9 +579,15 @@ const getMe = async (req, res) => {
       );
     }
 
+    // Make sure the role is included in the response
+    const userData = user.toObject();
+
+    // Log the user data for debugging
+    console.log("getMe() -> User Data:", userData);
+
     return sendResponse(
       res,
-      user,
+      userData,
       "User fetched successfully",
       RESPONSE_SUCCESS,
       RESPONSE_CODE.SUCCESS

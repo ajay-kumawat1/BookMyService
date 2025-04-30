@@ -27,4 +27,5 @@ export const Role = {
     ADMIN: "Admin",
     OWNER: "Owner",
     USER: "User",
+    SUPER_ADMIN: "SuperAdmin",
   };
