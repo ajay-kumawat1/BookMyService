@@ -43,6 +43,8 @@ const updateProfile = async (req, res) => {
   const { id } = req.params;
   const { body, file } = req;
   try {
+    console.log("Update profile request received:", { id, body, file });
+
     let businessOwner = await BusinessOwner.findOne({ _id: id });
     if (!businessOwner) {
       return sendResponse(
@@ -53,20 +55,50 @@ const updateProfile = async (req, res) => {
         RESPONSE_CODE.NOT_FOUND
       );
     }
+
     let input = {
       ...body
     }
+
     if (file) {
+      console.log("File received:", file.fieldname, file.mimetype);
+
+      // Delete old logo if it exists
       if (businessOwner.businessLogo) {
-        await deleteImageCloudinary(businessOwner.businessLogo)
+        try {
+          await deleteImageCloudinary(businessOwner.businessLogo);
+          console.log("Old logo deleted successfully");
+        } catch (error) {
+          console.error("Error deleting old logo:", error);
+          // Continue even if deletion fails
+        }
       }
-      input.businessLogo = await uploadImageCloudinary(file, "Biusiness/Owner")
+
+      try {
+        // Upload new logo to Cloudinary
+        const logoUrl = await uploadImageCloudinary(file, "Business/Owner");
+        console.log("New logo uploaded successfully:", logoUrl);
+        input.businessLogo = logoUrl;
+      } catch (uploadError) {
+        console.error("Error uploading logo to Cloudinary:", uploadError);
+        return sendResponse(
+          res,
+          {},
+          "Failed to upload logo: " + uploadError.message,
+          RESPONSE_FAILURE,
+          RESPONSE_CODE.BAD_REQUEST
+        );
+      }
     } else {
-      input.businessLogo = businessOwner.businessLogo
+      console.log("No file received, keeping existing logo");
+      input.businessLogo = businessOwner.businessLogo;
     }
+
+    console.log("Updating business owner with:", input);
     businessOwner = await BusinessOwner.findByIdAndUpdate(
       id,
-      input
+      input,
+      { new: true } // Return the updated document instead of the original
     );
     if (!businessOwner) {
       return sendResponse(

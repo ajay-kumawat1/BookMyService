@@ -603,6 +603,51 @@ const getMe = async (req, res) => {
     );
   }
 };
+// Handle social login callback
+const socialLoginCallback = async (req, res) => {
+  try {
+    console.log("Social login callback called");
+
+    // User is already authenticated by passport
+    const user = req.user;
+
+    if (!user) {
+      console.error("No user found in request");
+      return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/login?error=No user found`);
+    }
+
+    console.log("Authenticated user:", {
+      id: user._id,
+      role: user.role,
+      firstName: user.firstName,
+      email: user.email,
+      authProvider: user.authProvider
+    });
+
+    // Generate JWT token
+    const payload = {
+      user: {
+        id: user._id,
+        role: user.role,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+      },
+    };
+
+    const token = await signToken(payload);
+    console.log("JWT token generated successfully");
+
+    // Redirect to frontend with token
+    const redirectUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/social-auth-success?token=${token}`;
+    console.log("Redirecting to:", redirectUrl);
+    res.redirect(redirectUrl);
+  } catch (error) {
+    console.error("Social Login Callback Error:", error);
+    res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/login?error=${encodeURIComponent(error.message || 'Authentication failed')}`);
+  }
+};
+
 export default {
   register,
   verifyOtpAndCreateUser,
@@ -612,8 +657,8 @@ export default {
   forgotPasswordVerifyOtp,
   resetPassword,
   getMe,
-  // registerBusinessOwner,
   registerBusinessOwner,
   verifyOtpAndCreateBusinessOwner,
   businessOwnerLogin,
+  socialLoginCallback,
 };
