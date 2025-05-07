@@ -14,4 +14,5 @@ route.put("/accept/:id", validJWTNeeded, serviceController.acceptService);
 route.put("/cancel/:id", validJWTNeeded, serviceController.cancelService);
 route.post("/complete/:id", validJWTNeeded, serviceController.completeService);
 route.put("/update/:id", validJWTNeeded, handleServiceMultipartData.array('images', 10), serviceController.update);
+route.delete("/delete/:id", validJWTNeeded, serviceController.deleteService);
 export default route;

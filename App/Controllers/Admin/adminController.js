@@ -4,6 +4,7 @@ import { Role } from "../../Common/enum.js";
 import BusinessOwnerModel from "../../Models/BusinessOwnerModel.js";
 import ServiceModel from "../../Models/ServiceModel.js";
 import UserModel from "../../Models/UserModel.js";
+import BookingModel from "../../Models/Booking.js"
 
 const getAllUsers = async (req, res) => {
   try {
@@ -200,20 +201,21 @@ const deleteBusinessOwner = async (req, res) => {
   }
 };
 
-// In adminController.js
+// Get platform statistics
 const getStatistics = async (req, res) => {
   try {
     const totalUsers = await UserModel.countDocuments();
     const totalBusinessOwners = await BusinessOwnerModel.countDocuments();
     const totalServices = await ServiceModel.countDocuments();
-    
+    const totalBookings = await BookingModel.countDocuments();
+
     return sendResponse(
       res,
-      { 
+      {
         totalUsers,
         totalBusinessOwners,
         totalServices,
-        totalBookings: 0 // Add actual booking count if you have that model
+        totalBookings
       },
       "Statistics fetched successfully",
       RESPONSE_SUCCESS,

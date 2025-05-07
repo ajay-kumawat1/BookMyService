@@ -37,7 +37,7 @@ const register = async (req, res) => {
     await sendOtpMail(
       email,
       firstName,
-      "/email_template/signup_email_template.html",
+      "",
       otp
     );
 
@@ -152,7 +152,7 @@ const resendOtp = async (req, res) => {
     await sendOtpMail(
       email,
       user.firstName,
-      "/email_template/signup_email_template.html",
+      "",
       otp
     );
 
@@ -246,7 +246,7 @@ const forgotPassword = async (req, res) => {
     await sendOtpMail(
       email,
       user.firstName,
-      "/email_template/signup_email_template.html",
+      "",
       otp
     );
 
@@ -384,7 +384,7 @@ const registerBusinessOwner = async (req, res) => {
     await sendOtpMail(
       email,
       ownerFirstName,
-      "/email_template/signup_email_template.html",
+      "",
       otp
     );
 
@@ -549,12 +549,15 @@ const businessOwnerLogin = async (req, res) => {
 const getMe = async (req, res) => {
   try {
     const userId = req.user.id;
+    console.log("getMe() -> User ID:", userId);
+    console.log("getMe() -> User Role:", req.user.role);
 
     // Check how userType is determined
     let userType;
-    if (req.user.role == "User") {
+    if (req.user.role === "User") {
       userType = "User";
     } else {
+      // This includes Owner and SuperAdmin roles
       userType = "Owner";
     }
 
@@ -575,9 +578,15 @@ const getMe = async (req, res) => {
       );
     }
 
+    // Make sure the role is included in the response
+    const userData = user.toObject();
+
+    // Log the user data for debugging
+    console.log("getMe() -> User Data:", userData);
+
     return sendResponse(
       res,
-      user,
+      userData,
       "User fetched successfully",
       RESPONSE_SUCCESS,
       RESPONSE_CODE.SUCCESS
@@ -593,6 +602,51 @@ const getMe = async (req, res) => {
     );
   }
 };
+// Handle social login callback
+const socialLoginCallback = async (req, res) => {
+  try {
+    console.log("Social login callback called");
+
+    // User is already authenticated by passport
+    const user = req.user;
+
+    if (!user) {
+      console.error("No user found in request");
+      return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/login?error=No user found`);
+    }
+
+    console.log("Authenticated user:", {
+      id: user._id,
+      role: user.role,
+      firstName: user.firstName,
+      email: user.email,
+      authProvider: user.authProvider
+    });
+
+    // Generate JWT token
+    const payload = {
+      user: {
+        id: user._id,
+        role: user.role,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+      },
+    };
+
+    const token = await signToken(payload);
+    console.log("JWT token generated successfully");
+
+    // Redirect to frontend with token
+    const redirectUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/social-auth-success?token=${token}`;
+    console.log("Redirecting to:", redirectUrl);
+    res.redirect(redirectUrl);
+  } catch (error) {
+    console.error("Social Login Callback Error:", error);
+    res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/login?error=${encodeURIComponent(error.message || 'Authentication failed')}`);
+  }
+};
+
 export default {
   register,
   verifyOtpAndCreateUser,
@@ -602,8 +656,8 @@ export default {
   forgotPasswordVerifyOtp,
   resetPassword,
   getMe,
-  // registerBusinessOwner,
   registerBusinessOwner,
   verifyOtpAndCreateBusinessOwner,
   businessOwnerLogin,
+  socialLoginCallback,
 };

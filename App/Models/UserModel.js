@@ -17,6 +17,7 @@ export const UserSchema = new Schema(
     phoneNumber: {
       type: String,
       unique: true,
+      sparse: true, // Allow multiple null values (for social login users who don't provide phone)
     },
     avatar: {
       type: String,
@@ -33,6 +34,22 @@ export const UserSchema = new Schema(
     serviceOtp: {
       otp: { type: Number },
       expiresAt: { type: Date },
+    },
+    // Social login fields
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true, // Allow multiple null values
+    },
+    facebookId: {
+      type: String,
+      unique: true,
+      sparse: true, // Allow multiple null values
+    },
+    authProvider: {
+      type: String,
+      enum: ['local', 'google', 'facebook'],
+      default: 'local'
     },
   },
   {
