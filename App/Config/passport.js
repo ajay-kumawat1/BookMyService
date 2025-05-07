@@ -28,7 +28,7 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: 'http://localhost:5000/api/auth/google/callback',
+      callbackURL: 'https://bookmyservice.onrender.com/api/auth/google/callback',
       scope: ['profile', 'email'],
       // Add these options to help with debugging
       proxy: true,
@@ -81,7 +81,7 @@ passport.use(
     {
       clientID: process.env.FACEBOOK_APP_ID,
       clientSecret: process.env.FACEBOOK_APP_SECRET,
-      callbackURL: 'http://localhost:5000/api/auth/facebook/callback',
+      callbackURL: 'https://bookmyservice.onrender.com/api/auth/facebook/callback',
       profileFields: ['id', 'displayName', 'photos', 'email', 'name'],
     },
     async (accessToken, refreshToken, profile, done) => {
