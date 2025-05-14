@@ -39,7 +39,6 @@ export const sendSignUpMail = async (email, firstName, otp) => {
 
 export const sendMail = async (service, firstName, email, otp) => {
   try {
-    // Simple email without template
     const emailHtml = `
       <h1>Service Confirmation & OTP Details</h1>
       <p>Hello ${firstName},</p>
@@ -71,7 +70,6 @@ export const sendServiceBookedMail = async (owner, service, user, otp) => {
         service = service.toObject ? service.toObject() : service;
         user = user.toObject ? user.toObject() : user;
 
-    // Email to business owner
     const ownerEmailHtml = `
       <h1>Service Booking Notification</h1>
       <p>Hello ${owner.firstName || owner.ownerFirstName},</p>
@@ -96,7 +94,6 @@ export const sendServiceBookedMail = async (owner, service, user, otp) => {
       html: ownerEmailHtml,
     });
 
-    // Email to user with OTP
     const userEmailHtml = `
       <h1>Service Booking Confirmation</h1>
       <p>Hello ${user.firstName},</p>
@@ -143,7 +140,6 @@ export const sendServiceAcceptMail = async (owner, service, user) => {
     service = service.toObject ? service.toObject() : service;
     user = user.toObject ? user.toObject() : user;
 
-    // Email to user
     const emailHtml = `
       <h1>Service Booking Confirmation</h1>
       <p>Hello ${user.firstName},</p>
@@ -180,7 +176,6 @@ export const sendCancelServiceMail = async (service, user, customHtml = null) =>
     service = service.toObject ? service.toObject() : service;
     user = user.toObject ? user.toObject() : user;
 
-    // Use custom HTML if provided, otherwise use default template
     const emailHtml = customHtml || `
       <h1>Service Booking Cancellation</h1>
       <p>Hello ${user.firstName},</p>

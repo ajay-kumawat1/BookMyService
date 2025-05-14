@@ -1,5 +1,3 @@
-import path from "path";
-import { fileURLToPath } from "url";
 import { sendSignUpMail } from "./mail.js";
 import pkg from "jsonwebtoken";
 const { sign, verify } = pkg;
@@ -21,9 +19,9 @@ export async function generateOtp() {
 
 export async function storeOtpInCookie(res, otp) {
   res.cookie("otp", otp, {
-    httpOnly: true, // Prevent client-side access
-    secure: true, // Required for HTTPS (true in production)
-    sameSite: "None", // Allows cross-origin requests
+    httpOnly: true,
+    secure: true,
+    sameSite: "None",
   });
 }
 
